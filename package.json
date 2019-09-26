@@ -1,0 +1,37 @@
+{
+  "name": "skeid2",
+  "version": "0.0.00",
+  "description": "Skeid2; More Spring; Less Code ",
+  "keywords": [
+    "typescript",
+    "decorators",
+    "rest",
+    "api",
+    "web "
+  ],
+  "main": "./target/index.js",
+  "types": "./target/index.d.ts",
+  "scripts": {
+    "build": "gulp"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0",
+    "reflect-metadata": "0.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "6.0.110",
+    "@types/node-fetch": "^2.1.2",
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^4.0.2",
+    "typescript": "^2.8.1"
+  },
+  "author": "Nils Roesel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nilsroesel/skeid2"
+  },
+  "bugs": {
+    "url": "https://github.com/nilsroesel/skeid2/issues"
+  }
+}
