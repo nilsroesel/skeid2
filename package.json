@@ -12,17 +12,20 @@
   "main": "./target/index.js",
   "types": "./target/index.d.ts",
   "scripts": {
-    "build": "gulp"
+    "build": "gulp",
+    "test": "jasmine --config=jasmine.json"
   },
   "dependencies": {
     "tslib": "^1.10.0",
     "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
+    "@types/jasmine": "^3.5.0",
     "@types/node": "6.0.110",
     "@types/node-fetch": "^2.1.2",
     "gulp": "^4.0.2",
     "gulp-typescript": "^4.0.2",
+    "jasmine": "^3.5.0",
     "typescript": "^3.7.0"
   },
   "author": "Nils Roesel",
