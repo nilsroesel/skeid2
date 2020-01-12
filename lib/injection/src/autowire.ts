@@ -7,11 +7,12 @@ import {
 } from './internal';
 
 import {
-    isInstantiable
+    isInstantiable,
+    isQualifier
 } from './types';
 
-export function Autowired( qualifier: Instantiable<unknown> | Object, key?: Qualifier ): PropertyDecorator | any  {
-    if ( isInstantiable(qualifier) && key === undefined ) {
+export function Autowired( qualifier: Instantiable<unknown> | Object | Qualifier, key?: Qualifier ):  any  {
+    if ( ( isInstantiable(qualifier) || isQualifier(qualifier) ) && key === undefined ) {
         return handleAsDecoratorFactory(qualifier);
     }
 
@@ -20,9 +21,17 @@ export function Autowired( qualifier: Instantiable<unknown> | Object, key?: Qual
     }
 }
 
-function handleAsDecoratorFactory( qualifier: Instantiable<unknown> ): PropertyDecorator {
+function handleAsDecoratorFactory( qualifier: Instantiable<unknown> | Qualifier ): PropertyDecorator {
+    let qualifyingName: string;
+    if ( isInstantiable(qualifier) ) {
+        qualifyingName = qualifier.name;
+    } else if ( isQualifier(qualifier) ) {
+        qualifyingName = String(qualifier);
+    } else {
+        throw new Error('Unexpected qualifier of dependency');
+    }
     return ( target: Object , key: string | symbol ) => {
-        modifiableApplicationContext.add(qualifier.name, { target, key });
+        modifiableApplicationContext.add(qualifyingName, { target, key });
     }
 }
 

@@ -8,6 +8,11 @@ export function isInstantiable( something: unknown ): something is Instantiable<
 
 export type Qualifier = string | symbol;
 
+export function isQualifier( something: unknown ): something is Qualifier {
+    const type = typeof something;
+    return type === 'string' || type === 'symbol';
+}
+
 export interface DependencyRegistry {
     [name: string]: Instantiable<any>;
 }
