@@ -12,4 +12,7 @@ export class Foo {
 export class Bar {
     @Autowired
     public foo: Foo;
+
+    @Autowired(Foo)
+    public foo2: any;
 }
