@@ -41,7 +41,9 @@ function handleAsPlainDecorator( target: Object, key: Qualifier ): void {
         throw new Error(`Circular Dependency detected.
                 The reflection api will return undefined if so.
                 This issue is related to circular dependencies in typescripts module resolution.
-                Check https://github.com/Microsoft/TypeScript/issues/4521
+                Check out the following discussions for the issue
+                https://github.com/Microsoft/TypeScript/issues/4521
+                https://github.com/Microsoft/TypeScript/issues/20361
                 If this general issue is solved, the circular dependencies would work here without issues.
             `);
     }
