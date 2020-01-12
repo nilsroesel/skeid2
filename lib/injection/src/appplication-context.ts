@@ -18,8 +18,9 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
         this.dependencyToInjectionsMap.set(dependency, list);
     }
 
-    registerDependency<T>( clazz: Instantiable<T> ): void {
-        this.dependencyRegistry[clazz.name] = new clazz() as any;
+    registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void {
+        const dependencyName = !!qualifier? qualifier : clazz.name;
+        this.dependencyRegistry[dependencyName] = new clazz() as any;
     }
 
     loadDependency <T> ( Dependency: Instantiable<T> ): Promise<T> {
