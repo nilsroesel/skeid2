@@ -3,7 +3,7 @@ export interface Instantiable<T> {
 }
 
 export function isInstantiable( something: unknown ): something is Instantiable<any> {
-    return (something as Instantiable<any>).constructor !== undefined;
+    return (something as Instantiable<any>)?.prototype?.constructor !== undefined;
 }
 
 export type Qualifier = string | symbol;
@@ -19,7 +19,7 @@ export interface ApplicationContext {
 
 export interface ModifiableApplicationContext extends ApplicationContext {
     add( dependency: string, on: ContextContainer ): void;
-    registerDependency<T>( clazz: Instantiable<T> ): void;
+    registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void;
 }
 
 export interface ContextContainer  {
