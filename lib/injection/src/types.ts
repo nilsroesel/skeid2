@@ -2,6 +2,10 @@ export interface Instantiable<T> {
     new( ...args: any[] ): T;
 }
 
+export function isInstantiable( something: unknown ): something is Instantiable<any> {
+    return (something as Instantiable<any>).constructor !== undefined;
+}
+
 export type Qualifier = string | symbol;
 
 export interface DependencyRegistry {
@@ -17,8 +21,6 @@ export interface ModifiableApplicationContext extends ApplicationContext {
     add( dependency: string, on: ContextContainer ): void;
     registerDependency<T>( clazz: Instantiable<T> ): void;
 }
-
-export type Autowirable = Instantiable<any> | any;
 
 export interface ContextContainer  {
     target: any;
