@@ -39,7 +39,6 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
     }
 
     load <T> ( EntryClass?: Instantiable<T> ): Promise<T> {
-        console.info('Loading application context');
         return new Promise(resolve => {
             Object.defineProperty(ApplicationContextImpl, 'INITIALIZED', {
                 value: true, writable: false, configurable: false
