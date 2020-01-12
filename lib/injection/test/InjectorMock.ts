@@ -8,6 +8,9 @@ export class Foo {
     }
 }
 
+@Component('manual')
+export class Qualified extends Foo {}
+
 @Component
 export class Bar {
     @Autowired
@@ -15,4 +18,7 @@ export class Bar {
 
     @Autowired(Foo)
     public foo2: any;
+
+    @Autowired('manual')
+    public qualified: Qualified;
 }
