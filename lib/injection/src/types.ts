@@ -1,17 +1,4 @@
-export interface Instantiable<T> {
-    new( ...args: any[] ): T;
-}
-
-export function isInstantiable( something: unknown ): something is Instantiable<any> {
-    return (something as Instantiable<any>)?.prototype?.constructor !== undefined;
-}
-
-export type Qualifier = string | symbol;
-
-export function isQualifier( something: unknown ): something is Qualifier {
-    const type = typeof something;
-    return type === 'string' || type === 'symbol';
-}
+import { Instantiable } from '../../global-types';
 
 export interface DependencyRegistry {
     [name: string]: Instantiable<any>;
