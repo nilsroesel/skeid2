@@ -1,13 +1,10 @@
+import { modifiableApplicationContext } from './internal';
 import {
     Instantiable,
-    modifiableApplicationContext,
-    Qualifier
-} from './internal';
-
-import {
     isInstantiable,
-    isQualifier
-} from './types';
+    isQualifier,
+    Qualifier
+} from '../../global-types';
 
 export function Component<T>( qualifier: Instantiable<T> | Qualifier  ): any {
    if ( isQualifier(qualifier) ) {

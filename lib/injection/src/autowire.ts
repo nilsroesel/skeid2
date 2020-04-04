@@ -1,15 +1,12 @@
 import 'reflect-metadata'
 
+import { modifiableApplicationContext } from './internal';
 import {
     Instantiable,
-    modifiableApplicationContext,
-    Qualifier,
-} from './internal';
-
-import {
     isInstantiable,
-    isQualifier
-} from './types';
+    isQualifier,
+    Qualifier
+} from '../../global-types';
 
 export function Autowired( qualifier: Instantiable<unknown> | Object | Qualifier, key?: Qualifier ):  any  {
     if ( ( isInstantiable(qualifier) || isQualifier(qualifier) ) && key === undefined ) {

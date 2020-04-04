@@ -4,9 +4,9 @@ import {
     ApplicationContext,
     ContextContainer,
     DependencyRegistry,
-    Instantiable,
     ModifiableApplicationContext
 } from './types';
+import { Instantiable } from '../../global-types';
 
 class ApplicationContextImpl implements ModifiableApplicationContext {
     private dependencyToInjectionsMap: Map<string, Array<ContextContainer>> = new Map();
