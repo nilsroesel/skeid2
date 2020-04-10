@@ -1,16 +1,19 @@
 {
   "name": "skeid2",
-  "version": "0.0.00",
-  "description": "Skeid2; More Spring; Less Code ",
+  "version": "0.0.0",
+  "description": "Skeid2; More Expressiveness; Less Code ",
   "keywords": [
     "typescript",
     "decorators",
     "rest",
     "api",
-    "web "
+    "web",
+    "server",
+    "framework",
+    "nodejs"
   ],
-  "main": "./target/index.js",
-  "types": "./target/index.d.ts",
+  "main": "./target/lib/index.js",
+  "types": "./target/lib/index.d.ts",
   "scripts": {
     "build": "gulp",
     "test": "jasmine --config=jasmine.json"
@@ -26,6 +29,7 @@
     "gulp": "^4.0.2",
     "gulp-typescript": "^4.0.2",
     "jasmine": "^3.5.0",
+    "nodemon": "^2.0.2",
     "typescript": "^3.7.0"
   },
   "author": "Nils Roesel",
