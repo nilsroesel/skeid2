@@ -1,4 +1,4 @@
-import { Instantiable, Loader } from '../../global-types';
+import { Instantiable, Loader, Qualifier } from '../../global-types';
 
 export interface DependencyRegistry {
     [name: string]: Instantiable<any>;
@@ -11,6 +11,7 @@ export interface ApplicationContext extends Loader {
 
 export interface ModifiableApplicationContext extends ApplicationContext {
     add( dependency: string, on: ContextContainer ): void;
+    addAfterLoad<T>( dependency: Instantiable<T>, methodName: Qualifier ): void;
     registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void;
 }
 
