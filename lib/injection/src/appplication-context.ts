@@ -7,17 +7,23 @@ import {
     DependencyRegistry,
     ModifiableApplicationContext
 } from './types';
-import { Instantiable } from '../../global-types';
+import { Instantiable, Qualifier } from '../../global-types';
 
 class ApplicationContextImpl implements ModifiableApplicationContext {
     private dependencyToInjectionsMap: Map<string, Array<ContextContainer>> = new Map();
     private dependencyRegistry: DependencyRegistry = {};
+    private afterLoadRegistry: Array<{ dependency: Instantiable<any>; methodName: Qualifier }> = [];
     private loadedEvent: EventEmitter = new EventEmitter();
+
 
     public add( dependency: string, on: ContextContainer ): void {
         const list: Array<ContextContainer> = this.dependencyToInjectionsMap.get(dependency) || [];
         list.push(on);
         this.dependencyToInjectionsMap.set(dependency, list);
+    }
+
+    public addAfterLoad<T>( dependency: Instantiable<T>, methodName: Qualifier ): void {
+        this.afterLoadRegistry.push({ dependency, methodName });
     }
 
     public registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void {
@@ -45,6 +51,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
             const resolveAndEmit = (component?: T) => {
                 this.loadedEvent.emit('loaded');
                 this.loadedEvent.removeAllListeners();
+                this.executeAfterLoads();
                 resolve(component);
             };
             Object.defineProperty(ApplicationContextImpl, 'INITIALIZED', {
@@ -76,6 +83,16 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
             return;
         }
         this.loadedEvent.addListener('loaded', callback);
+    }
+
+    private executeAfterLoads() {
+        this.afterLoadRegistry.forEach(registeredAfterLoad => {
+            const createdDependency: any | undefined = this.dependencyRegistry[registeredAfterLoad.dependency.name];
+            if ( createdDependency === undefined ) {
+                throw new TypeError('Dependency instance is undefined');
+            }
+            createdDependency[registeredAfterLoad.methodName]?.apply(createdDependency);
+        });
     }
 }
 
