@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import { EventEmitter } from 'events';
 
 import {
     ApplicationContext,
@@ -11,19 +12,20 @@ import { Instantiable } from '../../global-types';
 class ApplicationContextImpl implements ModifiableApplicationContext {
     private dependencyToInjectionsMap: Map<string, Array<ContextContainer>> = new Map();
     private dependencyRegistry: DependencyRegistry = {};
+    private loadedEvent: EventEmitter = new EventEmitter();
 
-    add( dependency: string, on: ContextContainer ): void {
+    public add( dependency: string, on: ContextContainer ): void {
         const list: Array<ContextContainer> = this.dependencyToInjectionsMap.get(dependency) || [];
         list.push(on);
         this.dependencyToInjectionsMap.set(dependency, list);
     }
 
-    registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void {
+    public registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void {
         const dependencyName = !!qualifier? qualifier : clazz.name;
         this.dependencyRegistry[dependencyName] = new clazz() as any;
     }
 
-    loadDependency <T> ( Dependency: Instantiable<T> ): Promise<T> {
+    public loadDependency <T> ( Dependency: Instantiable<T> ): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             if ( !Object.getOwnPropertyDescriptor(ApplicationContextImpl, 'INITIALIZED') ) {
                 reject(<unknown>new Error('Application Context is not loaded yet.'));
@@ -38,8 +40,13 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
         });
     }
 
-    load <T> ( EntryClass?: Instantiable<T> ): Promise<T> {
+    public load <T> ( EntryClass?: Instantiable<T> ): Promise<T> {
         return new Promise(resolve => {
+            const resolveAndEmit = (component?: T) => {
+                this.loadedEvent.emit('loaded');
+                this.loadedEvent.removeAllListeners();
+                resolve(component);
+            };
             Object.defineProperty(ApplicationContextImpl, 'INITIALIZED', {
                 value: true, writable: false, configurable: false
             });
@@ -56,11 +63,19 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
                 });
             });
             if ( !!EntryClass ) {
-                this.loadDependency<T>(EntryClass).then(resolve);
+                this.loadDependency<T>(EntryClass).then(resolveAndEmit);
             } else {
-                resolve();
+                resolveAndEmit();
             }
         });
+    }
+
+    public whenLoaded( callback: Function ): void {
+        if ( Object.getOwnPropertyDescriptor(ApplicationContextImpl, 'INITIALIZED') ) {
+            callback();
+            return;
+        }
+        this.loadedEvent.addListener('loaded', callback);
     }
 }
 
@@ -72,6 +87,9 @@ const applicationContext: ApplicationContext = {
     },
     loadDependency: function<T>( Dependency: Instantiable<T> ): Promise<T> {
         return modifiableApplicationContext.loadDependency(Dependency)
+    },
+    whenLoaded: function ( callback: Function ) {
+        modifiableApplicationContext.whenLoaded(callback);
     }
 };
 
