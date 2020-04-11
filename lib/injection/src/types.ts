@@ -1,10 +1,10 @@
-import { Instantiable } from '../../global-types';
+import { Instantiable, Loader } from '../../global-types';
 
 export interface DependencyRegistry {
     [name: string]: Instantiable<any>;
 }
 
-export interface ApplicationContext {
+export interface ApplicationContext extends Loader {
     loadDependency: <T> ( Dependency: Instantiable<T> ) => Promise<T>;
     load: <T> ( EntryClass?: Instantiable<T> ) => Promise<T>;
 }
