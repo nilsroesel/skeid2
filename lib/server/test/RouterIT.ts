@@ -1,6 +1,7 @@
 import 'jasmine';
+import { parse } from 'url';
+
 import { Router } from '../src/routing/router';
-import { mockUrl } from './helpers';
 import { ClashingRoutesError, DuplicatedEndpointError } from '../../configuration/error';
 import { MethodNotAllowedError, NoSuchRouteError } from '../src/error';
 
@@ -16,19 +17,19 @@ describe('Test Router and routing', () => {
         router.registerRoute('GET','/users', () => []);
         router.registerRoute('GET','/api-version', () => 'v0-test');
 
-        expect(router.routeRequest('GET', mockUrl('/users/count'))())
+        expect(router.routeRequest('GET', parse('/users/count')).restMethod())
             .toEqual(0);
-        expect(router.routeRequest('GET', mockUrl('/users'))())
+        expect(router.routeRequest('GET', parse('/users')).restMethod())
             .toEqual([]);
-        expect(router.routeRequest('GET', mockUrl('/api-version'))())
+        expect(router.routeRequest('GET', parse('/api-version')).restMethod())
             .toEqual('v0-test');
     });
 
     it('Should not register single route parts', () => {
         router.registerRoute('GET','/users/count', () => undefined);
-        expect(() => router.routeRequest('GET', mockUrl('/users')))
+        expect(() => router.routeRequest('GET', parse('/users')))
             .toThrowMatching(thrown => (thrown instanceof NoSuchRouteError));
-        expect(() => router.routeRequest('GET', mockUrl('/users/')))
+        expect(() => router.routeRequest('GET', parse('/users/')))
             .toThrowMatching(thrown => (thrown instanceof NoSuchRouteError));
     });
 
@@ -40,15 +41,15 @@ describe('Test Router and routing', () => {
         router.registerRoute('GET','/users/{id}', () => user1);
         router.registerRoute('GET','/users/{id}/contacts', () => []);
 
-        expect(router.routeRequest('GET', mockUrl('/users/count'))())
+        expect(router.routeRequest('GET', parse('/users/count')).restMethod())
             .toEqual(1);
-        expect(router.routeRequest('GET', mockUrl('/users/count/contacts'))())
+        expect(router.routeRequest('GET', parse('/users/count/contacts')).restMethod())
             .toEqual(1);
-        expect(router.routeRequest('GET', mockUrl('/users'))())
+        expect(router.routeRequest('GET', parse('/users')).restMethod())
             .toEqual([user1]);
-        expect(router.routeRequest('GET', mockUrl('/users/1'))())
+        expect(router.routeRequest('GET', parse('/users/1')).restMethod())
             .toEqual(user1);
-        expect(router.routeRequest('GET', mockUrl('/users/1/contacts'))())
+        expect(router.routeRequest('GET', parse('/users/1/contacts')).restMethod())
             .toEqual([]);
     });
 
@@ -57,22 +58,22 @@ describe('Test Router and routing', () => {
         router.registerRoute('POST','/users', () => 201);
         router.registerRoute('DELETE','/users', () => 204);
 
-        expect(router.routeRequest('GET', mockUrl('/users'))())
+        expect(router.routeRequest('GET', parse('/users')).restMethod())
             .toEqual(200);
-        expect(router.routeRequest('POST', mockUrl('/users'))())
+        expect(router.routeRequest('POST', parse('/users')).restMethod())
             .toEqual(201);
-        expect(router.routeRequest('DELETE', mockUrl('/users'))())
+        expect(router.routeRequest('DELETE', parse('/users')).restMethod())
             .toEqual(204);
     });
 
     it('Should throw an NoSuchRouteError if route does not exist', () => {
-        expect(() => router.routeRequest('GET', mockUrl('/users')))
+        expect(() => router.routeRequest('GET', parse('/users')))
             .toThrowMatching(thrown => (thrown instanceof NoSuchRouteError));
     });
 
     it('Should throw an MethodNotAllowedError if route does exist and the method is not defined', () => {
         router.registerRoute('GET','/users', () => 200);
-        expect(() => router.routeRequest('POST', mockUrl('/users')))
+        expect(() => router.routeRequest('POST', parse('/users')))
             .toThrowMatching(thrown => (thrown instanceof MethodNotAllowedError));
     });
 
