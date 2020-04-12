@@ -1,6 +1,7 @@
 import { URL } from 'url';
 import { MethodNotAllowedError, NoSuchRouteError } from '../error';
 import { RegisteredEndpoint, RouteCollection } from './';
+import { RestSchema } from '../schema';
 
 export class Router {
 
@@ -8,23 +9,25 @@ export class Router {
 
     constructor() {}
 
-    public registerRoute( httpMethod: string, route: string, restMethod: Function ) {
-        const routeParts: Array<string> = route.split('/');
-        const endpoint: RegisteredEndpoint = { httpMethod, restMethod };
+    public registerRoute<T>( httpMethod: string, route: string, restMethod: Function,
+        schema?: RestSchema<T> | undefined ) {
+            const routeParts: Array<string> = route.split('/');
+            const endpoint: RegisteredEndpoint<T> = { httpMethod, restMethod, schema };
 
-        this.routes.addSubRoute(routeParts, endpoint);
+            this.routes.addSubRoute(routeParts, endpoint);
     }
 
     routeRequest( httpMethod: string, url: URL ): Function | never {
         const calledRoute: Array<string> = url.pathname.split('/');
 
-        const endpointsWithMatchingRoute: Array<RegisteredEndpoint> = this.routes.findEndpointsByRoute(calledRoute);
+        const endpointsWithMatchingRoute: Array<RegisteredEndpoint<any>>
+            = this.routes.findEndpointsByRoute(calledRoute);
 
         if ( endpointsWithMatchingRoute.length === 0 ) {
             throw new NoSuchRouteError(url);
         }
 
-        const endpointForRequestedHttpMethod: RegisteredEndpoint | undefined = endpointsWithMatchingRoute
+        const endpointForRequestedHttpMethod: RegisteredEndpoint<any> | undefined = endpointsWithMatchingRoute
             .find(endpoint => endpoint.httpMethod === httpMethod);
 
         if ( endpointForRequestedHttpMethod === undefined ) {
