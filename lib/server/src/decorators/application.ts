@@ -3,6 +3,8 @@ import * as http from 'http';
 import { Instantiable, isInstantiable } from '../../../global-types';
 import { applicationContext } from '../../../injection/src/external';
 import { routesReadyState, ReadyStateEmitter, classFieldReadyStateEmitterComposer } from '../state';
+import { RequestListener, RequestListenerFactory } from '../connectivity/request-listener-factory';
+import { router } from '../routing/router';
 
 export interface ApplicationConfiguration {
     port: number;
@@ -31,8 +33,10 @@ function startServer( configuration: Partial<ApplicationConfiguration> ): void {
         ...configuredReadyStates
     );
 
+    const requestListener: RequestListener = new RequestListenerFactory(router).create();
+
     applicationReadyState.whenReady(() => {
-        http.createServer().listen(configuration.port || 80, () => {
+        http.createServer(requestListener).listen(configuration.port || 80, () => {
             console.info('INFO',`Api is up and listening on port ${ configuration.port || 80 }`);
             console.info('INFO','Using schema http');
         })
