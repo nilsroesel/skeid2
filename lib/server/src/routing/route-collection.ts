@@ -8,14 +8,14 @@ export class RouteCollection {
 
     private readonly subRoutes: Array<RouteCollection> = new Array<RouteCollection>();
 
-    private endpoints: Array<RegisteredEndpoint> = new Array<RegisteredEndpoint>();
+    private endpoints: Array<RegisteredEndpoint<any>> = new Array<RegisteredEndpoint<any>>();
 
     private constructor(
         private readonly route: RoutePart,
         private readonly fullQualifiedRoute: Array<string> = [route.getPart()]
     ) {}
 
-    public addSubRoute( subRoute: Array<string>, endpoint: RegisteredEndpoint ): void | never {
+    public addSubRoute<T>( subRoute: Array<string>, endpoint: RegisteredEndpoint<T> ): void | never {
         // TODO throw if subRoutes contains undefined/null
         if ( subRoute.length === 0 ) return;
         const currentPart: RoutePart = RoutePart.constructFromString(subRoute[0]);
@@ -34,7 +34,7 @@ export class RouteCollection {
         newChild.addSubRoute(subRoute.slice(1), endpoint);
     }
 
-    public findEndpointsByRoute( route: Array<string> ): Array<RegisteredEndpoint> {
+    public findEndpointsByRoute( route: Array<string> ): Array<RegisteredEndpoint<any>> {
         if ( route.length === 0 ) return [];
         if ( route.length === 1 ) return this.endpoints;
 

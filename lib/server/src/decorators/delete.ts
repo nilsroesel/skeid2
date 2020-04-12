@@ -3,6 +3,6 @@ import { routesReadyState } from '../state';
 export function Delete( route: string ) {
     return ( target: any, methodName: string ) => {
         routesReadyState.incrementTargetNumberOfRoutes();
-        routesReadyState.initializeRoute('DELETE', route, target, methodName);
+        routesReadyState.initializeRoute(Delete,'DELETE', route, target, methodName, undefined);
     }
 }
