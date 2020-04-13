@@ -1,6 +1,6 @@
 import { Url } from 'url';
 import { MethodNotAllowedError, NoSuchRouteError } from '../error';
-import { RegisteredEndpoint, RouteCollection } from './';
+import { AssignedPathParameters, RegisteredEndpoint, RouteCollection } from './';
 import { RestSchema } from '../schema';
 
 export class Router {
@@ -17,7 +17,7 @@ export class Router {
             this.routes.addSubRoute(routeParts, endpoint);
     }
 
-    routeRequest( httpMethod: string, url: Url ): RegisteredEndpoint<unknown>{
+    routeRequest( httpMethod: string, url: Url ): RegisteredEndpoint<unknown> & AssignedPathParameters {
         const calledRoute: Array<string> = (url.pathname || '').split('/');
 
         const endpointsWithMatchingRoute: Array<RegisteredEndpoint<any>>
@@ -34,7 +34,10 @@ export class Router {
             throw new MethodNotAllowedError(httpMethod, endpointsWithMatchingRoute[0].route?.join('/'))
         }
 
-        return endpointForRequestedHttpMethod;
+        const pathParameters = RouteCollection.parsePathParameters(endpointForRequestedHttpMethod.route || [],
+            calledRoute);
+
+        return { ...endpointForRequestedHttpMethod, pathParameters };
     }
 }
 
