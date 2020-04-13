@@ -1,6 +1,7 @@
 import { Serializer } from './serializer';
 import { InvalidSchemaError } from './invalid-schema-error';
 
+
 export class RestSchema<T> {
 
     public static any(): RestSchema<any> {
@@ -15,6 +16,16 @@ export class RestSchema<T> {
 
     constructor( private schemaDefinition: SchemaDefinition<T>, private strictTypeCheck: boolean = true ) {}
 
+    public intersection<T2>( withSchema: RestSchema<T2> ): RestSchema<T & T2> {
+        // Even though the compiler complains. From the logical point
+        // SchemaDefinition<T & T2> equals SchemaDefinition<T> & SchemaDefinition<T2>
+        const newSchemaDefinition: SchemaDefinition<T & T2> = {
+            ...this.schemaDefinition,
+            ...withSchema.schemaDefinition
+        } as SchemaDefinition<T & T2>;
+        return new RestSchema<T & T2>(newSchemaDefinition);
+    }
+    
     public serialize( something: { [property: string]: any} ): T | never {
         if ( this.strictTypeCheck ) {
             this.checkStrictType(something);
