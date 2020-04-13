@@ -1,22 +1,22 @@
 import 'reflect-metadata';
 
 import { Qualifier } from '../../../global-types';
-import { getNameOfParameter, registerParameterIndexInMetadata } from './utils';
+import {
+    getNameOfParameter,
+    handleAsFactory,
+    isParameterFactory,
+    registerParameterIndexInMetadata,
+    SecondArgument,
+} from './utils';
 
 const namespace = 'query:';
-export function QueryParameter( parameterName: any, propertyKey?: Qualifier, parameterIndex?: number ): any {
-    if ( typeof parameterName === 'string' && propertyKey === undefined && parameterIndex === undefined ) {
-        return handleAsFactory(namespace + parameterName);
-    } else if ( propertyKey !== undefined && typeof parameterIndex === 'number' ) {
-        plainDecorator(parameterName, propertyKey, parameterIndex)
-    }
 
-}
-
-function handleAsFactory( useName: string ) {
-    return ( target: any, propertyKey: Qualifier, parameterIndex: number ) => {
-        registerParameterIndexInMetadata(target[propertyKey], useName, parameterIndex)
-    };
+export function QueryParameter( nameOrSerializer: any, serializerOrName?: SecondArgument, parameterIndex?: number | undefined ): any {
+   if ( isParameterFactory(nameOrSerializer, serializerOrName, parameterIndex) ) {
+       return handleAsFactory(namespace, nameOrSerializer, serializerOrName as Function | string | undefined);
+   } else if ( typeof parameterIndex === 'number' ) {
+       plainDecorator(nameOrSerializer, serializerOrName as Qualifier, parameterIndex);
+   }
 }
 
 function plainDecorator( target: any, propertyKey: Qualifier, parameterIndex: number  ): void {
