@@ -254,4 +254,19 @@ describe('RestSchema', () => {
             UserAndUserListSchema.serialize({ id: 1, name: 'Waldo', createdDate: '01-01-1999' });
         }).toThrowMatching(thrown => thrown instanceof InvalidSchemaError);
     });
+
+    it('Should serialize an partial schema', () => {
+        const PartialUserSchema: RestSchema<Partial<User>> = new RestSchema<User>( {
+            id: Number,
+            name: String,
+            createdDate: DateSerializer
+        }).asPartialType();
+
+        const created1 = PartialUserSchema.serialize({ id: 1 });
+
+        expect(created1.id).toEqual(1);
+        expect(created1.name).not.toBeDefined();
+        expect(created1.createdDate).not.toBeDefined();
+
+    });
 });

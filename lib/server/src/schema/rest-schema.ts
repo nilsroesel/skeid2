@@ -14,6 +14,8 @@ export class RestSchema<T> {
         return schema;
     }
 
+    private partialTyping: boolean = false;
+
     constructor( private schemaDefinition: SchemaDefinition<T>, private strictTypeCheck: boolean = true ) {}
 
     public intersection<T2>( withSchema: RestSchema<T2> ): RestSchema<T & T2> {
@@ -35,7 +37,7 @@ export class RestSchema<T> {
             .entries(this.schemaDefinition).map(entry => {
                 const schemaPropertyKey: string = entry[0];
                 const schemaProperty: SchemaProperty<any> = entry[1] as SchemaProperty<any>;
-                const definitionOptions: SchemaDefinitionOptions<any> = getDefinitionOptionsFrom(schemaProperty);
+                const definitionOptions: SchemaDefinitionOptions<any> = this.getDefinitionOptionsFrom(schemaProperty);
                 const samePropertyFromSomething: unknown | undefined = something[schemaPropertyKey];
 
                 if ( samePropertyFromSomething === undefined && definitionOptions.required ) {
@@ -44,6 +46,10 @@ export class RestSchema<T> {
 
                 if ( samePropertyFromSomething === undefined && definitionOptions.defaultValue !== undefined ) {
                     Object.assign(serialized, { [schemaPropertyKey]: definitionOptions.defaultValue });
+                    return;
+                }
+
+                if ( samePropertyFromSomething === undefined && !definitionOptions.required ) {
                     return;
                 }
                 try {
@@ -70,7 +76,7 @@ export class RestSchema<T> {
         const loggable = {};
         Object.entries(this.schemaDefinition).forEach(entry => {
             const schemaPropertyKey: string = entry[0];
-            const definition: any = getDefinitionOptionsFrom(entry[1] as any);
+            const definition: any = this.getDefinitionOptionsFrom(entry[1] as any);
 
             if ( definition.serializer instanceof RestSchema ) {
                 Object.assign(loggable, {[schemaPropertyKey]: definition.serializer.getLoggableSchemaDefinition() });
@@ -82,6 +88,12 @@ export class RestSchema<T> {
         return loggable;
     }
 
+    asPartialType(): RestSchema<Partial<T>> {
+        const newSchema: RestSchema<Partial<T>> = new RestSchema<Partial<T>>(this.schemaDefinition);
+        newSchema.partialTyping = true;
+        return newSchema;
+    }
+
     private checkStrictType( something: { [property: string]: any} ): void | never {
         const hasMorePropertiesThanDefined: boolean = Object.keys(something).filter(key =>
             Object.keys(this.schemaDefinition).find(k => k === key) === undefined
@@ -90,6 +102,19 @@ export class RestSchema<T> {
         if ( hasMorePropertiesThanDefined ) {
             throw new InvalidSchemaError(something, this.getLoggableSchemaDefinition());
         }
+    }
+
+    private getDefinitionOptionsFrom( schemaProperty: SchemaProperty<unknown> ): SchemaDefinitionOptions<unknown> | never {
+        if ( typeof schemaProperty === 'function' || schemaProperty instanceof RestSchema ) {
+            return {
+                serializer: schemaProperty,
+                required: !this.partialTyping && true
+            };
+        }
+        if ( isSchemaDefinitionOptions(schemaProperty) ) {
+            return { ...schemaProperty, required: !this.partialTyping && schemaProperty.required };
+        }
+        throw new TypeError(`A defined Schema Property is not valid.`);
     }
 
 }
@@ -105,20 +130,6 @@ export type SchemaDefinitionOptions<T> = {
     required?: boolean | undefined;
     defaultValue?: T | undefined;
 }
-
-function getDefinitionOptionsFrom( schemaProperty: SchemaProperty<unknown> ): SchemaDefinitionOptions<unknown> | never {
-    if ( typeof schemaProperty === 'function' || schemaProperty instanceof RestSchema ) {
-        return {
-            serializer: schemaProperty,
-            required: true
-        };
-    }
-    if ( isSchemaDefinitionOptions(schemaProperty) ) {
-        return schemaProperty;
-    }
-    throw new TypeError(`A defined Schema Property is not valid.`);
-}
-
 
 function isSchemaDefinitionOptions( something: unknown | undefined ): something is SchemaDefinitionOptions<unknown> {
     if ( something === undefined ) return false;
