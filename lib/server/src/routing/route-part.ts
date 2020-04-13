@@ -23,14 +23,16 @@ export class RoutePart {
     }
 
     public getPart(): string {
-        if ( this.isPathVariable() ) {
-            return this.part.slice(1)
-        }
         return this.part;
     }
 
     public isPathVariable(): boolean {
         return this.part.startsWith('{') && this.part.endsWith('}');
+    }
+
+    public getName(): string {
+        if ( !this.isPathVariable() ) return this.getPart();
+        return this.part.slice(1, this.part.length - 1);
     }
 
 }

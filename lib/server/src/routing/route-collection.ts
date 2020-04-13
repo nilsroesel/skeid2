@@ -2,8 +2,23 @@ import { ClashingRoutesError, DuplicatedEndpointError } from '../../../configura
 import { RoutePart, RegisteredEndpoint } from './';
 
 export class RouteCollection {
+
     public static initializeNew(): RouteCollection {
         return new RouteCollection(RoutePart.constructFromString(''));
+    }
+
+    public static parsePathParameters( route: Array<string>, urlPath: Array<string> ): { [parameter: string]: any } {
+        const pathParameters = {};
+
+        route.map(RoutePart.constructFromString)
+            .map((part, index) => ({ part, index }))
+            .filter(i => i.part.isPathVariable())
+            .forEach(pathVariableWithIndex => {
+                const parameterName: string = pathVariableWithIndex.part.getName();
+                const parameterValue: string = urlPath[pathVariableWithIndex.index];
+                Object.assign(pathParameters, { [parameterName]: parameterValue });
+            });
+        return pathParameters;
     }
 
     private readonly subRoutes: Array<RouteCollection> = new Array<RouteCollection>();
