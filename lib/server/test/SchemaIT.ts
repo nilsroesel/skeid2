@@ -215,4 +215,43 @@ describe('RestSchema', () => {
         const created: any = AnySchema.serialize(data);
         expect(created).toEqual(data);
     });
+
+    it('Should serialize an intersection schema', () => {
+        const UserSchema: RestSchema<User> = new RestSchema<User>( {
+            id: Number,
+            name: String,
+            createdDate: DateSerializer
+        });
+        const UserListSchema = new RestSchema<UserList>( {
+            users: ArraySerializer(UserSchema)
+        });
+        const UserAndUserListSchema = UserListSchema.intersection(UserSchema);
+
+        const user = { id: 1, name: 'Waldo', createdDate: '01-01-1999' };
+        const createdUser = { id: 1, name: 'Waldo', createdDate: new Date('01-01-1999') };
+
+        const created = UserAndUserListSchema.serialize({
+            id: 1,
+            name: 'Waldo',
+            createdDate: '01-01-1999',
+            users: [user, user]
+        });
+        expect(created).toEqual({ ...createdUser, users: [createdUser, createdUser] });
+    });
+
+    it('Should fail to serialize an intersection schema', () => {
+        const UserSchema: RestSchema<User> = new RestSchema<User>( {
+            id: Number,
+            name: String,
+            createdDate: DateSerializer
+        });
+        const UserListSchema = new RestSchema<UserList>( {
+            users: ArraySerializer(UserSchema)
+        });
+
+        expect(() => {
+            const UserAndUserListSchema = UserListSchema.intersection(UserSchema);
+            UserAndUserListSchema.serialize({ id: 1, name: 'Waldo', createdDate: '01-01-1999' });
+        }).toThrowMatching(thrown => thrown instanceof InvalidSchemaError);
+    });
 });
