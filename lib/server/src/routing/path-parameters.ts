@@ -1,7 +1,5 @@
-export interface PathParameters {
-    [parameterName: string]: string;
-}
+import { Parameters } from '../../../global-types';
 
 export interface AssignedPathParameters {
-    pathParameters: PathParameters;
+    pathParameters: Parameters;
 }
