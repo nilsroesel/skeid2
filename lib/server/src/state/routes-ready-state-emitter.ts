@@ -1,5 +1,5 @@
 import { applicationContext } from '../../../injection/src/appplication-context';
-import { decoratedItemIsMethod } from '../decorators';
+import { copyMetadata, decoratedItemIsMethod } from '../decorators';
 import { InvalidDecoratedItemError } from '../../../configuration';
 import { router } from '../routing/router';
 import { ReadyStateEmitter } from './ready-state-emitter';
@@ -31,8 +31,13 @@ class RoutesReadyStateEmitter extends ReadyStateEmitter {
                 if ( !decoratedItemIsMethod(method) ) {
                     throw new InvalidDecoratedItemError(decorator, ['METHOD']);
                 }
+                const restMethod = ( args: Array<any> ) => method.apply(component, args);
+                copyMetadata(method, restMethod);
                 this.incrementInitializedRoutes();
-                router.registerRoute(httpMethod, route, () => method.apply(component), schema);
+                router.registerRoute(httpMethod,
+                    route,
+                    restMethod,
+                    schema);
             })
         });
     }
