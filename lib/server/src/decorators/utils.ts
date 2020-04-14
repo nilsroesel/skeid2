@@ -27,7 +27,7 @@ export function getNameOfParameter( ofFunction: Function, parameterIndex: number
     return parameterNameAtIndex;
 }
 
-/* Specific for @PathParameter and @QueryParameter */
+/* Specific for @PathVariable and @QueryParameter */
 
 export type SecondArgument = Qualifier | Function | undefined;
 export function getParameterIndexFromMetadata( from: Function, parameterName: string ): number | undefined {

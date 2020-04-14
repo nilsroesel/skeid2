@@ -10,7 +10,7 @@ import {
 } from './utils';
 const namespace: string = 'path:';
 
-export function PathParameter( nameOrSerializer: any, serializerOrName?: SecondArgument, parameterIndex?: number | undefined ): any {
+export function PathVariable( nameOrSerializer: any, serializerOrName?: SecondArgument, parameterIndex?: number | undefined ): any {
     if ( isParameterFactory(nameOrSerializer, serializerOrName, parameterIndex) ) {
         return handleAsFactory(namespace, nameOrSerializer, serializerOrName as Function | string | undefined);
     } else if ( typeof parameterIndex === 'number' ) {
