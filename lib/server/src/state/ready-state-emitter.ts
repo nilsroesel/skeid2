@@ -4,6 +4,9 @@ export class ReadyStateEmitter {
 
     public static compose( ... emitters: Array<ReadyStateEmitter> ): ReadyStateEmitter {
         const composedEmitter: ReadyStateEmitter = new ReadyStateEmitter();
+        if ( emitters.length === 0 ) {
+            composedEmitter.changeStateToReady();
+        }
 
         emitters.forEach(emitter => {
             emitter.whenReady(() =>{
