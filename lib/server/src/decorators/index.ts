@@ -2,7 +2,7 @@ export * from './application';
 export * from './delete';
 export * from './get';
 export * from './patch';
-export * from './path-parameter';
+export * from './path-variable';
 export * from './post';
 export * from './put';
 export * from './query-parameter';
