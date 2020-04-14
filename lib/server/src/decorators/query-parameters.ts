@@ -10,6 +10,6 @@ export function QueryParameters<T>( parameterSchema: RestSchema<T> ) {
     }
 }
 
-export function readQueryParameterSchemaFromMetadata( from: Function ): RestSchema<any> | undefined {
+export function getQueryParameterSchemaFromMetadata( from: Function ): RestSchema<any> | undefined {
     return Reflect.getOwnMetadata(queryParameterMetadata, from);
 }

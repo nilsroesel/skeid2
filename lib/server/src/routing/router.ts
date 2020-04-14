@@ -1,7 +1,6 @@
 import { Url } from 'url';
 import { MethodNotAllowedError, NoSuchRouteError } from '../error';
 import { AssignedPathParameters, RegisteredEndpoint, RouteCollection } from './';
-import { RestSchema } from '../schema';
 
 export class Router {
 
@@ -9,10 +8,9 @@ export class Router {
 
     constructor() {}
 
-    public registerRoute<T>( httpMethod: string, route: string, restMethod: Function,
-        schema?: RestSchema<T> | undefined ) {
+    public registerRoute<T>( httpMethod: string, route: string, restMethod: Function ) {
             const routeParts: Array<string> = route.split('/');
-            const endpoint: RegisteredEndpoint<T> = { httpMethod, restMethod, schema };
+            const endpoint: RegisteredEndpoint<T> = { httpMethod, restMethod };
 
             this.routes.addSubRoute(routeParts, endpoint);
     }
