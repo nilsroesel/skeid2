@@ -30,7 +30,7 @@ export function getNameOfParameter( ofFunction: Function, parameterIndex: number
 /* Specific for @PathParameter and @QueryParameter */
 
 export type SecondArgument = Qualifier | Function | undefined;
-export function getParameterIndex( from: Function, parameterName: string ): number | undefined {
+export function getParameterIndexFromMetadata( from: Function, parameterName: string ): number | undefined {
     return Reflect.getMetadata(parameterName, from);
 }
 

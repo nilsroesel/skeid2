@@ -1,9 +1,8 @@
 import { routesReadyState } from '../state';
-import { RestSchema } from '../schema';
 
-export function Patch<T>( route: string, schema: RestSchema<T> = RestSchema.any() as RestSchema<T> ) {
+export function Patch( route: string ) {
     return ( target: any, methodName: string ) => {
         routesReadyState.incrementTargetNumberOfRoutes();
-        routesReadyState.initializeRoute(Patch,'PATCH', route, target, methodName, schema);
+        routesReadyState.initializeRoute(Patch,'PATCH', route, target, methodName);
     }
 }

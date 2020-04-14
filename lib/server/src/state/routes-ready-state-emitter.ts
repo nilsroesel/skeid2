@@ -3,7 +3,6 @@ import { copyMetadata, decoratedItemIsMethod } from '../decorators';
 import { InvalidDecoratedItemError } from '../../../configuration';
 import { router } from '../routing/router';
 import { ReadyStateEmitter } from './ready-state-emitter';
-import { RestSchema } from '../schema';
 
 class RoutesReadyStateEmitter extends ReadyStateEmitter {
 
@@ -22,7 +21,7 @@ class RoutesReadyStateEmitter extends ReadyStateEmitter {
     }
 
     public initializeRoute<T>( decorator: Function, httpMethod: string, route: string, target: any,
-        methodName: string, schema?: RestSchema<T> | undefined ): void {
+        methodName: string ): void {
         // This will change effectively the evaluation order of the typescript decorators.
         // To ensure decorators, on which this decorator relies on, are evaluated
         applicationContext.whenLoaded(() => {
@@ -34,10 +33,7 @@ class RoutesReadyStateEmitter extends ReadyStateEmitter {
                 const restMethod = ( args: Array<any> ) => method.apply(component, args);
                 copyMetadata(method, restMethod);
                 this.incrementInitializedRoutes();
-                router.registerRoute(httpMethod,
-                    route,
-                    restMethod,
-                    schema);
+                router.registerRoute(httpMethod, route, restMethod);
             })
         });
     }
