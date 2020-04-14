@@ -16,6 +16,7 @@ export function RequestBody<T>( schema: any | RestSchema<T>,
 
 function handlePlainDecorator( target: any, propertyKey: Qualifier, parameterIndex: number ) {
     Reflect.defineMetadata(requestBodyMetadata, parameterIndex, target[propertyKey]);
+    Reflect.defineMetadata(requestBodyJsonSchema, RestSchema.any(), target[propertyKey]);
 }
 
 function handleAsFactory<T>( schema: RestSchema<T> ) {
