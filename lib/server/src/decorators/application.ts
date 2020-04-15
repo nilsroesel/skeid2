@@ -2,7 +2,11 @@ import * as http from 'http';
 
 import { Instantiable, isInstantiable } from '../../../global-types';
 import { applicationContext } from '../../../injection/src/external';
-import { routesReadyState, ReadyStateEmitter, classFieldReadyStateEmitterComposer } from '../state';
+import {
+    routesReadyState,
+    ReadyStateEmitter,
+    classFieldReadyStateEmitterComposer,
+} from '../state';
 import { RequestListener, RequestListenerFactory } from '../connectivity';
 import { router } from '../routing/router';
 
@@ -28,7 +32,7 @@ function startServer( configuration: Partial<ApplicationConfiguration> ): void {
     const configuredReadyStates = configuration.isReadyWhen || [];
 
     const applicationReadyState = ReadyStateEmitter.compose(
-        routesReadyState,
+        routesReadyState.changeToReadyAfterApplicationWithEmptyRoutes(),
         classFieldReadyStateEmitterComposer.composeRegisteredEmitters(),
         ...configuredReadyStates
     );
