@@ -22,7 +22,13 @@ export interface TextResponse extends Response {
     body( from: string ): TextResponse;
 }
 
-export class ResponseEntityFactory {
+export interface ResponseFactory {
+    ResponseEntity(): Instantiable<Response>;
+    JsonResponseEntity<T>(): Instantiable<JsonResponse<T>>;
+    TextResponseEntity(): Instantiable<TextResponse>;
+}
+
+export class ResponseEntityFactory implements ResponseFactory {
 
     constructor( private readonly response: ServerResponse ) {}
 
