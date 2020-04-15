@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { RestSchema } from '../schema';
+import { Maybe } from '../../../global-types';
 
 const queryParameterMetadata = Symbol('queryParams');
 
@@ -10,6 +11,6 @@ export function QueryParameters<T>( parameterSchema: RestSchema<T> ) {
     }
 }
 
-export function getQueryParameterSchemaFromMetadata( from: Function ): RestSchema<any> | undefined {
+export function getQueryParameterSchemaFromMetadata( from: Function ): Maybe<RestSchema<any>> {
     return Reflect.getOwnMetadata(queryParameterMetadata, from);
 }

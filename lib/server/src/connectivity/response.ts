@@ -1,21 +1,21 @@
 import { OutgoingHttpHeaders, ServerResponse } from 'http';
 import { HttpHeaders, HttpHeaderSet } from './http-headers';
-import { Instantiable } from '../../../global-types';
+import { Instantiable, Maybe } from '../../../global-types';
 
 interface FinishedResponse {}
 
 export interface Response {
     body( data: any ): Response;
-    respond( data?: Buffer | string | undefined ): FinishedResponse;
+    respond( data?: Maybe<Buffer | string> ): FinishedResponse;
     setHeader( header: string, value: string | Array<string> ): Response;
     setHeaders( headers: HttpHeaders | HttpHeaderSet ): Response;
-    status( statusCode: number, statusMessage?: string | undefined ): Response;
+    status( statusCode: number, statusMessage?: Maybe<string> ): Response;
     writeChunk( chunk: Buffer | string ): Response;
     writeHead(): Response;
 }
 
 export interface JsonResponse<T> extends Response {
-    body( from: T ): JsonResponse<T>;
+    body( from?: Maybe<T> ): JsonResponse<T>;
 }
 
 export interface TextResponse extends Response {
@@ -41,7 +41,7 @@ export class ResponseEntityFactory implements ResponseFactory {
                 return this;
             }
 
-            public respond( data?: Buffer | string | undefined ): FinishedResponse {
+            public respond( data?: Maybe<Buffer | string> ): FinishedResponse {
                 if ( data !== undefined ) response.write(data);
                 response.end();
                 return {};
@@ -62,7 +62,7 @@ export class ResponseEntityFactory implements ResponseFactory {
                 return this;
             }
 
-            public status( statusCode: number, statusMessage?: string | undefined ): Response {
+            public status( statusCode: number, statusMessage?: Maybe<string> ): Response {
                 response.statusCode = statusCode;
                 if ( statusMessage !== undefined ) response.statusMessage = statusMessage;
                 return this;
@@ -82,14 +82,14 @@ export class ResponseEntityFactory implements ResponseFactory {
 
     public JsonResponseEntity<T>(): Instantiable<JsonResponse<T>> {
         return class extends (this.ResponseEntity()) implements JsonResponse<T> {
-            private _body: T | undefined = undefined;
+            private _body: Maybe<T> = undefined;
 
-            public body( from: T | undefined ): JsonResponse<T> {
+            public body( from?: Maybe<T> ): JsonResponse<T> {
                 this._body = from;
                 return this;
             }
 
-            public respond( data?: Buffer | string ): FinishedResponse {
+            public respond(): FinishedResponse {
                 return super.respond(JSON.stringify(this._body));
             }
 
@@ -103,7 +103,7 @@ export class ResponseEntityFactory implements ResponseFactory {
                 return this;
             }
 
-            public status( statusCode: number, statusMessage?: string | undefined ): JsonResponse<T> {
+            public status( statusCode: number, statusMessage?: Maybe<string> ): JsonResponse<T> {
                 super.status(statusCode, statusMessage);
                 return this;
             }
@@ -120,9 +120,9 @@ export class ResponseEntityFactory implements ResponseFactory {
 
     public TextResponseEntity(): Instantiable<TextResponse> {
         return class extends (this.ResponseEntity()) implements TextResponse {
-            private _body: string | undefined = undefined;
+            private _body: Maybe<string> = undefined;
 
-            public body( from: string | undefined ): TextResponse {
+            public body( from: Maybe<string> ): TextResponse {
                 this._body = from;
                 return this;
             }
@@ -141,7 +141,7 @@ export class ResponseEntityFactory implements ResponseFactory {
                 return this;
             }
 
-            public status( statusCode: number, statusMessage?: string | undefined ): TextResponse {
+            public status( statusCode: number, statusMessage?: Maybe<string> ): TextResponse {
                 super.status(statusCode, statusMessage);
                 return this;
             }

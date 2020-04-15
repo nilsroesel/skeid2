@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { Qualifier } from '../../../global-types';
+import { Maybe, Qualifier } from '../../../global-types';
 import {
     getNameOfParameter,
     handleAsFactory,
@@ -11,7 +11,7 @@ import {
 
 const namespace = 'query:';
 
-export function QueryParameter( nameOrSerializer: any, serializerOrName?: SecondArgument, parameterIndex?: number | undefined ): any {
+export function QueryParameter( nameOrSerializer: any, serializerOrName?: SecondArgument, parameterIndex?: Maybe<number>): any {
    if ( isParameterFactory(nameOrSerializer, serializerOrName, parameterIndex) ) {
        return handleAsFactory(namespace, nameOrSerializer, serializerOrName as Function | string | undefined);
    } else if ( typeof parameterIndex === 'number' ) {

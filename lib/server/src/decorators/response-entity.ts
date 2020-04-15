@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { Response, ResponseFactory } from '../connectivity';
-import { Instantiable, Qualifier } from '../../../global-types';
+import { Instantiable, Maybe, Qualifier } from '../../../global-types';
 
 const responseEntityParameterInjectionMetadata = Symbol('response-entity-injection');
 
@@ -21,7 +21,7 @@ export function ResponseEntity<T extends Response>( select: SelectorFunction<T> 
 
 
 
-export function getResponseEntityInjectionMetadata( from: Function ): ResponseEntityInjectionMetadata | undefined {
+export function getResponseEntityInjectionMetadata( from: Function ): Maybe<ResponseEntityInjectionMetadata> {
     return  Reflect.getMetadata(responseEntityParameterInjectionMetadata, from);
 }
 
