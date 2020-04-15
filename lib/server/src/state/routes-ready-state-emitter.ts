@@ -9,6 +9,15 @@ class RoutesReadyStateEmitter extends ReadyStateEmitter {
     private targetNumberOfRoutes: number = 0;
     private initializedRoutes: number = 0;
 
+    public changeToReadyAfterApplicationWithEmptyRoutes(): ReadyStateEmitter {
+        applicationContext.whenLoaded(() => {
+            if ( this.targetNumberOfRoutes === 0 ) {
+                this.changeStateToReady();
+            }
+        });
+        return this;
+    }
+
     public incrementTargetNumberOfRoutes(): void {
         ++this.targetNumberOfRoutes;
     }
