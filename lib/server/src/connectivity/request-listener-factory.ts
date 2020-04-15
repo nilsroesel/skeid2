@@ -10,10 +10,11 @@ import {
     getProducingDecoratorMetadata,
     getQueryParameterSchemaFromMetadata,
     getRequestParameterIndexFromMethodMetaData,
-    ProducingMetadata
+    getResponseEntityInjectionMetadata,
+    ProducingMetadata,
+    ResponseEntityInjectionMetadata
 } from '../decorators';
 import { Response, ResponseFactory, ResponseEntityFactory } from './response';
-import { getResponseEntityInjectionMetadata, ResponseEntityInjectionMetadata } from '../decorators/response-entity';
 import { Maybe } from '../../../global-types';
 
 export type RequestListener = ( request: IncomingMessage, response: ServerResponse ) => void;
@@ -37,7 +38,7 @@ export class RequestListenerFactory {
                     const usedMimeType = defaultEssentialResponseOptions.mimeType || 'application/json';
                     const resolvedRequest: Request<any, any> = await Request.new(
                         request,
-                        mappedEndpoint.pathParameters,
+                        mappedEndpoint.pathVariables,
                         requestUrl.query,
                         getBodySchemaFromMethodMetadata(mappedEndpoint.restMethod),
                         getQueryParameterSchemaFromMetadata(mappedEndpoint.restMethod)
@@ -65,9 +66,8 @@ export class RequestListenerFactory {
                     }
                     return;
                 })
-                .then((responseEntity: Response | undefined) => {
-                    responseEntity?.respond();
-                }).catch(error => {
+                .then((responseEntity: Maybe<Response>) => responseEntity?.respond())
+                .catch(error => {
                     // TODO Inject error handler
                     console.log(error);
                     response.statusCode = 500;
