@@ -6,6 +6,7 @@ import {
     routesReadyState,
     ReadyStateEmitter,
     classFieldReadyStateEmitterComposer,
+    errorHandlerReadyState
 } from '../state';
 import { RequestListener, RequestListenerFactory } from '../connectivity';
 import { router } from '../routing/router';
@@ -34,6 +35,7 @@ function startServer( configuration: Partial<ApplicationConfiguration> ): void {
     const applicationReadyState = ReadyStateEmitter.compose(
         routesReadyState.changeToReadyAfterApplicationWithEmptyRoutes(),
         classFieldReadyStateEmitterComposer.composeRegisteredEmitters(),
+        errorHandlerReadyState.changeToReadyAfterApplicationInitWithEmptyRegistry(),
         ...configuredReadyStates
     );
 
