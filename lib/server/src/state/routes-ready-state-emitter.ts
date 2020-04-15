@@ -24,17 +24,17 @@ class RoutesReadyStateEmitter extends ReadyStateEmitter {
         methodName: string ): void {
         // This will change effectively the evaluation order of the typescript decorators.
         // To ensure decorators, on which this decorator relies on, are evaluated
-        applicationContext.whenLoaded(() => {
-            applicationContext.loadDependency(target.constructor).then(( component: any ) => {
-                const method: unknown = component[methodName];
-                if ( !decoratedItemIsMethod(method) ) {
-                    throw new InvalidDecoratedItemError(decorator, ['METHOD']);
-                }
-                const restMethod = ( args: Array<any> ) => method.apply(component, args);
-                copyMetadata(method, restMethod);
-                this.incrementInitializedRoutes();
-                router.registerRoute(httpMethod, route, restMethod);
-            })
+        applicationContext.whenLoaded(async () => {
+            const component: any = await applicationContext.loadDependency(target.constructor);
+
+            const method: unknown = component[methodName];
+            if ( !decoratedItemIsMethod(method) ) {
+                throw new InvalidDecoratedItemError(decorator, ['METHOD']);
+            }
+            const restMethod = ( args: Array<any> ) => method.apply(component, args);
+            copyMetadata(method, restMethod);
+            this.incrementInitializedRoutes();
+            router.registerRoute(httpMethod, route, restMethod);
         });
     }
 }
