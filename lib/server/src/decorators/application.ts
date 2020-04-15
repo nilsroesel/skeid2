@@ -33,9 +33,9 @@ function startServer( configuration: Partial<ApplicationConfiguration> ): void {
     const configuredReadyStates = configuration.isReadyWhen || [];
 
     const applicationReadyState = ReadyStateEmitter.compose(
-        routesReadyState.changeToReadyAfterApplicationWithEmptyRoutes(),
+        routesReadyState.getSelfAndSetToReadyIfPristineAfterInit(),
+        errorHandlerReadyState.getSelfAndSetToReadyIfPristineAfterInit(),
         classFieldReadyStateEmitterComposer.composeRegisteredEmitters(),
-        errorHandlerReadyState.changeToReadyAfterApplicationInitWithEmptyRegistry(),
         ...configuredReadyStates
     );
 

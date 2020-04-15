@@ -1,17 +1,17 @@
-import { ReadyStateEmitter } from './ready-state-emitter';
 import { Qualifier } from '../../../global-types';
 import { applicationContext } from '../../../injection/src/appplication-context';
 import { copyMetadata, decoratedItemIsMethod } from '../decorators';
 import { InvalidDecoratedItemError } from '../../../configuration/error';
 import { ErrorHandler, errorHandlerRegistry } from '../error-handler';
+import { PristineReadyStateEmitter } from './pristine-ready-state-emitter';
 
-export class ErrorHandlerStateEmitter extends ReadyStateEmitter {
+export class ErrorHandlerStateEmitter extends PristineReadyStateEmitter {
     private targetedNumberOfHandlers: number = 0;
     private initializedHandler: number = 0;
 
-    public changeToReadyAfterApplicationInitWithEmptyRegistry(): ReadyStateEmitter {
+    public getSelfAndSetToReadyIfPristineAfterInit(): ErrorHandlerStateEmitter {
         applicationContext.whenLoaded(() => {
-            if ( this.targetedNumberOfHandlers === 0 ) {
+            if ( this.isPristine() ) {
                 this.changeStateToReady();
             }
         });
@@ -19,6 +19,7 @@ export class ErrorHandlerStateEmitter extends ReadyStateEmitter {
     }
 
     public initializeErrorHandler( target: any, methodName: Qualifier ): void {
+        this.changeToStale();
         ++this.targetedNumberOfHandlers;
         applicationContext.whenLoaded(async () => {
             this.incrementInitialized();
