@@ -10,6 +10,7 @@ import {
 } from '../state';
 import { RequestListener, RequestListenerFactory } from '../connectivity';
 import { router } from '../routing/router';
+import { RestErrorHandler } from '../error-handler';
 
 export interface ApplicationConfiguration {
     port: number;
@@ -39,7 +40,7 @@ function startServer( configuration: Partial<ApplicationConfiguration> ): void {
         ...configuredReadyStates
     );
 
-    const requestListener: RequestListener = new RequestListenerFactory(router).create();
+    const requestListener: RequestListener = new RequestListenerFactory(router, RestErrorHandler.customOnly()).create();
 
     applicationReadyState.whenReady(() => {
         http.createServer(requestListener).listen(configuration.port || 80, () => {

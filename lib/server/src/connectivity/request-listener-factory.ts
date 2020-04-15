@@ -10,17 +10,19 @@ import {
     getProducingDecoratorMetadata,
     getQueryParameterSchemaFromMetadata,
     getRequestParameterIndexFromMethodMetaData,
-    ProducingMetadata
+    getResponseEntityInjectionMetadata,
+    ProducingMetadata,
+    ResponseEntityInjectionMetadata
 } from '../decorators';
 import { Response, ResponseFactory, ResponseEntityFactory } from './response';
-import { getResponseEntityInjectionMetadata, ResponseEntityInjectionMetadata } from '../decorators/response-entity';
 import { Maybe } from '../../../global-types';
+import { RestErrorHandler } from '../error-handler';
 
 export type RequestListener = ( request: IncomingMessage, response: ServerResponse ) => void;
 
 export class RequestListenerFactory {
 
-    constructor( private router: Router ) {}
+    constructor( private router: Router, private errorHandler: RestErrorHandler ) {}
 
     public create(): RequestListener {
         return ( request: IncomingMessage, response: ServerResponse ) => {
@@ -46,7 +48,7 @@ export class RequestListenerFactory {
 
                     const responseEntity = constructResponseBasedOnMimeType(usedMimeType, responseEntityFactory);
 
-                    // @RequestBody/@PathVariable/@QueryParameter
+                    // @RequestBody/@PathVariable/@QueryParameter/@ResponseEntity
                     const callerArguments = createCallerArguments(
                         mappedEndpoint.restMethod,
                         resolvedRequest,
@@ -65,12 +67,11 @@ export class RequestListenerFactory {
                     }
                     return;
                 })
-                .then((responseEntity: Response | undefined) => {
+                .then((responseEntity: Maybe<Response>) => {
                     responseEntity?.respond();
                 }).catch(error => {
-                    // TODO Inject error handler
-                    console.log(error);
-                    response.statusCode = 500;
+                    const apiError = this.errorHandler.handleError(error);
+                    response.statusCode = apiError.code;
                     response.end();
                 });
         };
