@@ -2,16 +2,16 @@ import { applicationContext } from '../../../injection/src/appplication-context'
 import { copyMetadata, decoratedItemIsMethod } from '../decorators';
 import { InvalidDecoratedItemError } from '../../../configuration';
 import { router } from '../routing/router';
-import { ReadyStateEmitter } from './ready-state-emitter';
+import { PristineReadyStateEmitter } from './pristine-ready-state-emitter';
 
-class RoutesReadyStateEmitter extends ReadyStateEmitter {
+class RoutesReadyStateEmitter extends PristineReadyStateEmitter {
 
     private targetNumberOfRoutes: number = 0;
     private initializedRoutes: number = 0;
 
-    public changeToReadyAfterApplicationWithEmptyRoutes(): ReadyStateEmitter {
+    public getSelfAndSetToReadyIfPristineAfterInit(): RoutesReadyStateEmitter {
         applicationContext.whenLoaded(() => {
-            if ( this.targetNumberOfRoutes === 0 ) {
+            if ( this.isPristine()) {
                 this.changeStateToReady();
             }
         });
@@ -19,6 +19,7 @@ class RoutesReadyStateEmitter extends ReadyStateEmitter {
     }
 
     public incrementTargetNumberOfRoutes(): void {
+        this.changeToStale();
         ++this.targetNumberOfRoutes;
     }
 

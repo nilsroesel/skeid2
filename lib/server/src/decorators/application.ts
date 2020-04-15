@@ -5,8 +5,7 @@ import { applicationContext } from '../../../injection/src/external';
 import {
     routesReadyState,
     ReadyStateEmitter,
-    classFieldReadyStateEmitterComposer,
-    errorHandlerReadyState
+    classFieldReadyStateEmitterComposer
 } from '../state';
 import { RequestListener, RequestListenerFactory } from '../connectivity';
 import { router } from '../routing/router';
@@ -33,9 +32,8 @@ function startServer( configuration: Partial<ApplicationConfiguration> ): void {
     const configuredReadyStates = configuration.isReadyWhen || [];
 
     const applicationReadyState = ReadyStateEmitter.compose(
-        routesReadyState.changeToReadyAfterApplicationWithEmptyRoutes(),
+        routesReadyState.getSelfAndSetToReadyIfPristineAfterInit(),
         classFieldReadyStateEmitterComposer.composeRegisteredEmitters(),
-        errorHandlerReadyState.changeToReadyAfterApplicationInitWithEmptyRegistry(),
         ...configuredReadyStates
     );
 

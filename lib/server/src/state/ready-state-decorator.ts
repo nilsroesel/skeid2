@@ -2,6 +2,7 @@ import { applicationContext } from '../../../injection/src/appplication-context'
 import { ReadyStateEmitter } from './ready-state-emitter';
 import { InvalidInstanceOnFiledError } from '../../../configuration/error';
 import { Instantiable } from '../../../global-types';
+import { PristineReadyStateEmitter } from './pristine-ready-state-emitter';
 
 export function ReadyState( target: any, emitterName: string ) {
     classFieldReadyStateEmitterComposer.incrementTargetedEmitterCount();
@@ -33,7 +34,12 @@ class ClassFieldReadyStateEmitterComposer {
             throw new Error(`Tried to compose ${ this.registeredEmitters.length} emitters,` +
                 `but ${ this.targetEmitterCount } where targeted.`);
         }
-        return ReadyStateEmitter.compose(...this.registeredEmitters);
+        return ReadyStateEmitter.compose(...this.registeredEmitters.map(emitter => {
+            if ( emitter instanceof PristineReadyStateEmitter ) {
+                return emitter.getSelfAndSetToReadyIfPristineAfterInit();
+            }
+            return emitter;
+        }));
     }
 }
 
