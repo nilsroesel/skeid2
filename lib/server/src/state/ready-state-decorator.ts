@@ -14,14 +14,13 @@ class ClassFieldReadyStateEmitterComposer {
     private registeredEmitters: Array<ReadyStateEmitter> = new Array<ReadyStateEmitter>();
 
     public addEmitter( dependencyName: Instantiable<any>, fieldName: string ): void {
-        applicationContext.whenLoaded(() => {
-            applicationContext.loadDependency(dependencyName).then((component: any) => {
-                const emitter: unknown = component[fieldName];
-                if ( !(emitter instanceof ReadyStateEmitter) ) {
-                    throw new InvalidInstanceOnFiledError(dependencyName.name, fieldName, ReadyStateEmitter.name);
-                }
-                this.registeredEmitters.push(emitter);
-            });
+        applicationContext.whenLoaded(async () => {
+            const component: any = await applicationContext.loadDependency(dependencyName);
+            const emitter: unknown = component[fieldName];
+            if ( !(emitter instanceof ReadyStateEmitter) ) {
+                throw new InvalidInstanceOnFiledError(dependencyName.name, fieldName, ReadyStateEmitter.name);
+            }
+            this.registeredEmitters.push(emitter);
         });
     }
 
