@@ -3,7 +3,7 @@ import * as http from 'http';
 import { Instantiable, isInstantiable } from '../../../global-types';
 import { applicationContext } from '../../../injection/src/external';
 import { routesReadyState, ReadyStateEmitter, classFieldReadyStateEmitterComposer } from '../state';
-import { RequestListener, RequestListenerFactory } from '../connectivity/request-listener-factory';
+import { RequestListener, RequestListenerFactory } from '../connectivity';
 import { router } from '../routing/router';
 
 export interface ApplicationConfiguration {

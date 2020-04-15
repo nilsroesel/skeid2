@@ -1,5 +1,6 @@
 import { Serializer } from './serializer';
 import { InvalidSchemaError } from './invalid-schema-error';
+import { Maybe } from '../../../global-types';
 
 
 export class RestSchema<T> {
@@ -33,7 +34,7 @@ export class RestSchema<T> {
             this.checkStrictType(something);
         }
         const serialized: Partial<T> = {};
-        const wrongProperties: Array<Error | undefined> = Object
+        const wrongProperties: Array<Maybe<Error>> = Object
             .entries(this.schemaDefinition).map(entry => {
                 const schemaPropertyKey: string = entry[0];
                 const schemaProperty: SchemaProperty<any> = entry[1] as SchemaProperty<any>;
@@ -127,11 +128,11 @@ export type SchemaProperty<T> = Serializer<T> | SchemaDefinitionOptions<T> | Res
 
 export type SchemaDefinitionOptions<T> = {
     serializer: Serializer<T> | RestSchema<T>;
-    required?: boolean | undefined;
-    defaultValue?: T | undefined;
+    required?: Maybe<boolean>;
+    defaultValue?: Maybe<T> ;
 }
 
-function isSchemaDefinitionOptions( something: unknown | undefined ): something is SchemaDefinitionOptions<unknown> {
+function isSchemaDefinitionOptions( something: Maybe<unknown> ): something is SchemaDefinitionOptions<unknown> {
     if ( something === undefined ) return false;
     const serializerIsFunction = typeof (something as SchemaDefinitionOptions<unknown>).serializer === 'function';
     const requiredIsBooleanOrUndefined = typeof (something as SchemaDefinitionOptions<unknown>).required === 'boolean'

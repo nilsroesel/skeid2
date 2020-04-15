@@ -31,7 +31,7 @@ export class RequestListenerFactory {
                     const defaultEssentialResponseOptions: ProducingMetadata =
                         getProducingDecoratorMetadata(mappedEndpoint.restMethod);
 
-                    const responseInjection: ResponseEntityInjectionMetadata | undefined =
+                    const responseInjection: Maybe<ResponseEntityInjectionMetadata> =
                         getResponseEntityInjectionMetadata(mappedEndpoint.restMethod);
 
                     const usedMimeType = defaultEssentialResponseOptions.mimeType || 'application/json';
@@ -78,7 +78,7 @@ export class RequestListenerFactory {
 
 }
 
-function getDefaultStatusFrom( httpMethod: string | undefined, resultContent: any ): number {
+function getDefaultStatusFrom( httpMethod: Maybe<string>, resultContent: any ): number {
     if ( resultContent === null || resultContent === undefined ) return 204;
     if ( httpMethod === 'GET' ) return 200;
     if ( httpMethod === 'POST' || httpMethod === 'PUT' || httpMethod === 'PATCH' ) return 201;
@@ -95,7 +95,7 @@ function createCallerArguments( restMethod: Function, request: Request<any, any>
             args[responseInjection.index] = new (selection.apply(responseEntityFactory))();
         }
 
-        const requestBodyIndex: number | undefined = getRequestParameterIndexFromMethodMetaData(restMethod);
+        const requestBodyIndex: Maybe<number> = getRequestParameterIndexFromMethodMetaData(restMethod);
         if ( requestBodyIndex !== undefined ) args[requestBodyIndex] = request.body;
 
         assignParametersToArguments(args, restMethod, request.routeParams, 'path:');

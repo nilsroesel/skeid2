@@ -15,7 +15,7 @@ export class RoutePart {
 
     private constructor( private part: string ) {}
 
-    public matchesSplitedUrlPart( urlPart: string ) {
+    public matchesSplitedUrlPart( urlPart: string ): boolean {
         if ( this.isPathVariable() ) {
             return true;
         }

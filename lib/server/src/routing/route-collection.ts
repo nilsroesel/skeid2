@@ -1,5 +1,6 @@
 import { ClashingRoutesError, DuplicatedEndpointError } from '../../../configuration/error';
 import { RoutePart, RegisteredEndpoint } from './';
+import { Maybe } from '../../../global-types';
 
 export class RouteCollection {
 
@@ -55,8 +56,8 @@ export class RouteCollection {
 
         if ( this.route.matchesSplitedUrlPart(route[0]) ) {
             const nextPart: RoutePart = RoutePart.constructFromString(route[1]);
-            const childWithExactString: RouteCollection | undefined = this.getChild(nextPart);
-            const childAsPathVariable: RouteCollection | undefined = this.getPathVariable();
+            const childWithExactString: Maybe<RouteCollection> = this.getChild(nextPart);
+            const childAsPathVariable: Maybe<RouteCollection> = this.getPathVariable();
 
             return childWithExactString?.findEndpointsByRoute(route.slice(1)) ||
                 childAsPathVariable?.findEndpointsByRoute(route.slice(1)) || []
@@ -65,7 +66,7 @@ export class RouteCollection {
     }
 
     private addChild( routePart: RoutePart ): RouteCollection {
-        const existingRoutePart: RouteCollection | undefined = this.getChild(routePart);
+        const existingRoutePart: Maybe<RouteCollection> = this.getChild(routePart);
         if ( existingRoutePart !== undefined ) {
             return existingRoutePart;
         }
@@ -81,11 +82,11 @@ export class RouteCollection {
         return newSubRoute;
     }
 
-    private getChild( routePart: RoutePart ): RouteCollection | undefined {
+    private getChild( routePart: RoutePart ): Maybe<RouteCollection> {
         return this.subRoutes.find(part => part.route.getPart() === routePart.getPart());
     }
 
-    private getPathVariable(): RouteCollection | undefined {
+    private getPathVariable(): Maybe<RouteCollection> {
         return this.subRoutes.find(part => part.route.isPathVariable());
     }
 

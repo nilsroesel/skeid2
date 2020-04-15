@@ -26,7 +26,7 @@ function handleAsFactory<T>( schema: RestSchema<T> ) {
     }
 }
 
-export function getRequestParameterIndexFromMethodMetaData( from: Function ): number | undefined {
+export function getRequestParameterIndexFromMethodMetaData( from: Function ): Maybe<number> {
     return Reflect.getMetadata(requestBodyMetadata, from);
 }
 

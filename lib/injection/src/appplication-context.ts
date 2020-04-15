@@ -7,7 +7,7 @@ import {
     DependencyRegistry,
     ModifiableApplicationContext
 } from './types';
-import { Instantiable, Qualifier } from '../../global-types';
+import { Instantiable, Maybe, Qualifier } from '../../global-types';
 
 class ApplicationContextImpl implements ModifiableApplicationContext {
     private dependencyToInjectionsMap: Map<string, Array<ContextContainer>> = new Map();
@@ -46,7 +46,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
         });
     }
 
-    public load <T> ( EntryClass?: Instantiable<T> ): Promise<T> {
+    public load <T> ( EntryClass?: Maybe<Instantiable<T>> ): Promise<T> {
         return new Promise(resolve => {
             const resolveAndEmit = (component?: T) => {
                 this.loadedEvent.emit('loaded');
@@ -69,7 +69,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
                     });
                 });
             });
-            if ( !!EntryClass ) {
+            if ( EntryClass !== undefined ) {
                 this.loadDependency<T>(EntryClass).then(resolveAndEmit);
             } else {
                 resolveAndEmit();
@@ -87,7 +87,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
 
     private executeAfterLoads() {
         this.afterLoadRegistry.forEach(registeredAfterLoad => {
-            const createdDependency: any | undefined = this.dependencyRegistry[registeredAfterLoad.dependency.name];
+            const createdDependency: Maybe<any> = this.dependencyRegistry[registeredAfterLoad.dependency.name];
             if ( createdDependency === undefined ) {
                 throw new TypeError('Dependency instance is undefined');
             }
@@ -99,7 +99,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
 const modifiableApplicationContext: ModifiableApplicationContext = new ApplicationContextImpl();
 
 const applicationContext: ApplicationContext = {
-    load: function <T> ( EntryClass?: Instantiable<T> ): Promise<T> {
+    load: function <T> ( EntryClass?: Maybe<Instantiable<T>> ): Promise<T> {
         return modifiableApplicationContext.load(EntryClass)
     },
     loadDependency: function<T>( Dependency: Instantiable<T> ): Promise<T> {
