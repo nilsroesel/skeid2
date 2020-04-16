@@ -2,20 +2,36 @@ import 'reflect-metadata';
 
 import { Maybe, Qualifier } from '../../../global-types';
 import { decoratedItemIsMethod } from './utils';
-import { InvalidDecoratedItemError } from '../../../configuration/error';
+import { InvalidDecoratedItemError, UnrecognizedUsageOfDecoratorError } from '../../../configuration/error';
 
 const statusCodeMetadata = Symbol('status-code');
 const mimeTypeMetadata = Symbol('mime-type');
 
-export function Produces( statusCode: number, mimeType?: string ) {
-    return ( target: any, methodName: Qualifier ): void => {
+export function Produces( statusCode: number, mimeType?: Maybe<string> ) {
+    return ( target: any, methodName?: Maybe<Qualifier> ): void => {
+        if ( methodName === undefined ) {
+            return handleAsClassDecorator(target, statusCode, mimeType);
+        }
+
+
         const decoratedItem = target[methodName];
         if ( !decoratedItemIsMethod(decoratedItem) ) {
-            throw new InvalidDecoratedItemError(Produces, ['METHOD']);
+            throw new InvalidDecoratedItemError(Produces, ['CLASS', 'METHOD']);
         }
         Reflect.defineMetadata(statusCodeMetadata, statusCode, decoratedItem);
         Reflect.defineMetadata(mimeTypeMetadata, mimeType, decoratedItem);
     };
+}
+
+function handleAsClassDecorator( constructor: Function, statusCode: number, mimeType: string = 'text/plain' ): void {
+    if ( !(constructor.prototype instanceof Error) ) {
+        throw new UnrecognizedUsageOfDecoratorError(Produces,
+            ['CLASS', 'METHOD'],
+            `${ constructor.name }: Ony classes extending <<Error>> can be decorated`);
+    }
+
+    Reflect.defineMetadata(statusCodeMetadata, statusCode, constructor);
+    Reflect.defineMetadata(mimeTypeMetadata, mimeType, constructor);
 }
 
 export interface ProducingMetadata {
