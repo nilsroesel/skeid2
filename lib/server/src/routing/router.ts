@@ -1,6 +1,6 @@
 import { Url } from 'url';
 import { MethodNotAllowedError, NoSuchRouteError } from '../error';
-import { AssignedPathParameters, RegisteredEndpoint, RouteCollection } from './';
+import { AssignedPathVariables, RegisteredEndpoint, RouteCollection } from './';
 
 export class Router {
 
@@ -15,7 +15,7 @@ export class Router {
             this.routes.addSubRoute(routeParts, endpoint);
     }
 
-    routeRequest( httpMethod: string, url: Url ): RegisteredEndpoint<unknown> & AssignedPathParameters {
+    routeRequest( httpMethod: string, url: Url ): RegisteredEndpoint<unknown> & AssignedPathVariables {
         const calledRoute: Array<string> = (url.pathname || '').split('/');
 
         const endpointsWithMatchingRoute: Array<RegisteredEndpoint<any>>
@@ -32,10 +32,10 @@ export class Router {
             throw new MethodNotAllowedError(httpMethod, endpointsWithMatchingRoute[0].route?.join('/'))
         }
 
-        const pathParameters = RouteCollection.parsePathParameters(endpointForRequestedHttpMethod.route || [],
+        const pathVariables = RouteCollection.parsePathParameters(endpointForRequestedHttpMethod.route || [],
             calledRoute);
 
-        return { ...endpointForRequestedHttpMethod, pathParameters };
+        return { ...endpointForRequestedHttpMethod, pathVariables };
     }
 }
 
