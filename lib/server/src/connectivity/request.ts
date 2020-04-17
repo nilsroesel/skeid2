@@ -1,8 +1,9 @@
 import { IncomingHttpHeaders, IncomingMessage } from 'http';
 
-import { RestSchema } from '../schema';
-import { BadContentTypeError } from '../error';
+import { InvalidSchemaError, RestSchema } from '../schema';
+import { BadContentTypeError, BadRequestError } from '../error';
 import { Maybe, Parameters } from '../../../global-types';
+import { BadQueryParameterError } from '../error/bad-query-parameter-error';
 
 export class Request<B, Q extends Parameters> {
     public static async serializeBody<T>( request: IncomingMessage, schema: RestSchema<T> ): Promise<T> {
@@ -32,14 +33,27 @@ export class Request<B, Q extends Parameters> {
 
     public static async new<S, Q extends Parameters>( request: IncomingMessage, routeParameters: any, queryParameters: any,
         schema: Maybe<RestSchema<S>>, querySchema: Maybe<RestSchema<Q>>) : Promise<Request<Maybe<S>, Parameters | Q>> {
-        const serializedQueryParams: Q | Parameters = querySchema?.serialize(queryParameters || {})
-            || queryParameters;
+        const serializedQueryParams: Q | Parameters = await Promise.resolve()
+                .then(() => querySchema?.serialize(queryParameters || {}) || queryParameters)
+                .catch(error => {
+                    if ( error instanceof InvalidSchemaError ) {
+                        throw new BadQueryParameterError(error.message);
+                    }
+                    throw error;
+                });
+
 
         if ( schema === undefined ) {
             return new Request<undefined, {}>(request.headers, routeParameters, serializedQueryParams, undefined);
         }
 
-        const serializedBody: S = await Request.serializeBody<S>(request, schema);
+        const serializedBody: S = await Request.serializeBody<S>(request, schema)
+            .catch(error => {
+                if ( error instanceof InvalidSchemaError ) {
+                    throw new BadRequestError(`Expected Body Schema: ${ JSON.stringify(error.message) }`);
+                }
+                throw error;
+            });
         return new Request<S, Q | Parameters>(request.headers, routeParameters, serializedQueryParams, serializedBody);
     }
 
