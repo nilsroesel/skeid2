@@ -16,7 +16,8 @@
   "types": "./target/lib/index.d.ts",
   "scripts": {
     "build": "gulp",
-    "test": "jasmine --config=jasmine.json"
+    "test": "jasmine --config=jasmine.json",
+    "count-lines": "git diff --shortstat `git hash-object -t tree /dev/null`"
   },
   "dependencies": {
     "tslib": "^1.10.0",
