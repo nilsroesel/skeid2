@@ -53,9 +53,9 @@ describe('Test Router and routing', () => {
             .toEqual([]);
     });
 
-    it('Should assign the correct path parameters', () => {
+    it('Should assign the correct path variables', () => {
         router.registerRoute('GET','/users/{id}', () => undefined);
-        expect(router.routeRequest('GET', parse('/users/1')).pathParameters)
+        expect(router.routeRequest('GET', parse('/users/1')).pathVariables)
             .toEqual({ id: '1' });
     });
 
