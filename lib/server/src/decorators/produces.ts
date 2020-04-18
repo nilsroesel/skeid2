@@ -24,14 +24,14 @@ export function Produces( statusCode: number, mimeType?: Maybe<string> ) {
 }
 
 function handleAsClassDecorator( constructor: Function, statusCode: number, mimeType: string = 'text/plain' ): void {
-    if ( !(constructor.prototype instanceof Error) ) {
-        throw new UnrecognizedUsageOfDecoratorError(Produces,
-            ['CLASS', 'METHOD'],
-            `${ constructor.name }: Ony classes extending <<Error>> can be decorated`);
+    if ( (constructor.prototype instanceof Error) || constructor === Error ) {
+        Reflect.defineMetadata(statusCodeMetadata, statusCode, constructor);
+        Reflect.defineMetadata(mimeTypeMetadata, mimeType, constructor);
+        return;
     }
-
-    Reflect.defineMetadata(statusCodeMetadata, statusCode, constructor);
-    Reflect.defineMetadata(mimeTypeMetadata, mimeType, constructor);
+    throw new UnrecognizedUsageOfDecoratorError(Produces,
+        ['CLASS', 'METHOD'],
+        `${ constructor.name }: Ony classes extending <<Error>> can be decorated`);
 }
 
 export interface ProducingMetadata {
