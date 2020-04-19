@@ -1,15 +1,21 @@
 import 'reflect-metadata';
-import { Qualifier } from '../../../global-types';
+import { Maybe, Qualifier } from '../../../global-types';
 
 export function decoratedItemIsMethod( something: unknown ): something is Function {
     return typeof something === 'function';
 }
 
 export function copyMetadata( from: any, to: any ): void {
-    Reflect.getOwnMetadataKeys(from).forEach(metadataKey => {
+    Reflect.getMetadataKeys(from).forEach(metadataKey => {
        const metadata: any = Reflect.getOwnMetadata(metadataKey, from);
        Reflect.defineMetadata(metadataKey, metadata, to);
     });
+}
+
+export function assignOnlyDefinedMetadata<T>( to: any, metadata: string | symbol, value: Maybe<T> ): void {
+    if ( value !== undefined ) {
+        Reflect.defineMetadata(metadata, value, to);
+    }
 }
 
 export function getNameOfParameter( ofFunction: Function, parameterIndex: number ): string | never {
