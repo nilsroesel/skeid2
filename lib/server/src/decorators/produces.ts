@@ -2,43 +2,64 @@ import 'reflect-metadata';
 
 import { Maybe, Qualifier } from '../../../global-types';
 import { assignOnlyDefinedMetadata, decoratedItemIsMethod } from './utils';
-import { InvalidDecoratedItemError, UnrecognizedUsageOfDecoratorError } from '../../../configuration/error';
+import {
+    DecoratorType,
+    InvalidDecoratedItemError,
+    UnrecognizedUsageOfDecoratorError
+} from '../../../configuration/error';
 
-const statusCodeMetadata = Symbol('status-code');
-const mimeTypeMetadata = Symbol('mime-type');
+const statusCodeMetadata = Symbol('produces:static-status-code');
+const mimeTypeMetadata = Symbol('produces:mime-type');
 
-export function Produces( statusCode: number, mimeType?: Maybe<string> ) {
+export type StatusCodeGenerator<T> = ( obj: T ) => number;
+
+const ALLOWED_TYPES: Array<DecoratorType> = ['CLASS', 'METHOD'];
+export function Produces<T>( statusCode: number | StatusCodeGenerator<T>, mimeType?: Maybe<string> ) {
     return ( target: any, methodName?: Maybe<Qualifier> ): void => {
         if ( methodName === undefined ) {
             return handleAsClassDecorator(target, statusCode, mimeType);
         }
         const decoratedItem = target[methodName];
         if ( !decoratedItemIsMethod(decoratedItem) ) {
-            throw new InvalidDecoratedItemError(Produces, ['CLASS', 'METHOD']);
+            throw new InvalidDecoratedItemError(Produces, ALLOWED_TYPES);
         }
-        assignOnlyDefinedMetadata(decoratedItem, statusCodeMetadata, statusCode);
+        const status: StatusCodeGenerator<any> = mergeStatusToFunction(statusCode);
+        assignOnlyDefinedMetadata(decoratedItem, statusCodeMetadata, status);
         assignOnlyDefinedMetadata(decoratedItem, mimeTypeMetadata, mimeType);
     };
 }
 
-function handleAsClassDecorator( constructor: Function, statusCode: number, mimeType?: Maybe<string> ): void {
-    if ( (constructor.prototype instanceof Error) || constructor === Error ) {
-        assignOnlyDefinedMetadata(constructor, statusCodeMetadata, statusCode);
-        assignOnlyDefinedMetadata(constructor, mimeTypeMetadata, mimeType);
-        return;
-    }
-    throw new UnrecognizedUsageOfDecoratorError(Produces,
-        ['CLASS', 'METHOD'],
-        `${ constructor.name }: Ony classes extending <<Error>> can be decorated`);
+function handleAsClassDecorator( constructor: Function,
+    statusCode: number | StatusCodeGenerator<any>, mimeType?: Maybe<string> ): void {
+        const status: StatusCodeGenerator<any> = mergeStatusToFunction(statusCode);
+
+        if ( (constructor.prototype instanceof Error) || constructor === Error ) {
+            assignOnlyDefinedMetadata(constructor, statusCodeMetadata, status);
+            assignOnlyDefinedMetadata(constructor, mimeTypeMetadata, mimeType);
+            return;
+        }
+        throw new UnrecognizedUsageOfDecoratorError(Produces,
+            ALLOWED_TYPES,
+            `${ constructor.name }: Ony classes extending <<Error>> can be decorated`);
 }
 
+function mergeStatusToFunction( from: number | StatusCodeGenerator<any> ): StatusCodeGenerator<any> {
+    if ( typeof from === 'number' ) return () => from;
+    return from;
+}
+
+
 export interface ProducingMetadata {
-    statusCode: Maybe<number>;
+    statusCode: Maybe<StatusCodeGenerator<any>>;
     mimeType: Maybe<string>;
 }
 
 export function getProducingDecoratorMetadata( from: Function ): ProducingMetadata {
-    const statusCode: Maybe<number> = Reflect.getMetadata(statusCodeMetadata, from);
+    const statusCode: Maybe<StatusCodeGenerator<any>> = Reflect.getMetadata(statusCodeMetadata, from);
     const mimeType: Maybe<string> = Reflect.getMetadata(mimeTypeMetadata, from);
+
+    if ( statusCode !== undefined ) {
+        return { statusCode, mimeType }
+    }
     return { statusCode, mimeType };
 }

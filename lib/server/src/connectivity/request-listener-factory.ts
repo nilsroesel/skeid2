@@ -12,7 +12,9 @@ import {
     getQueryParameterSchemaFromMetadata,
     getRequestParameterIndexFromMethodMetaData,
     getResponseEntityInjectionMetadata,
-    ResponseEntityInjectionMetadata
+    ProducingMetadata,
+    ResponseEntityInjectionMetadata,
+    StatusCodeGenerator
 } from '../decorators';
 import { Response, ResponseFactory, ResponseEntityFactory } from './response';
 import { Maybe } from '../../../global-types';
@@ -67,7 +69,9 @@ export class RequestListenerFactory {
                     console.log(error);
                     const mimeType: string = resolveMimeType(error.constructor, error);
                     const responseEntity: Response = constructResponseBasedOnMimeType(mimeType, responseEntityFactory);
-                    responseEntity.status(getProducingDecoratorMetadata(error.constructor).statusCode || 500);
+                    const producingMetadata: ProducingMetadata = getProducingDecoratorMetadata(error.constructor);
+                    const statusCodeGenerator = producingMetadata.statusCode || (() => 500);
+                    responseEntity.status(statusCodeGenerator(error));
                     responseEntity.setHeader('Content-Type', mimeType);
                     responseEntity.body(error);
                     responseEntity.respond();
@@ -112,14 +116,13 @@ function constructResponseBasedOnMimeType( mimeType: string, factory: ResponseEn
     if ( mimeType === 'application/json' ) return new (factory.JsonResponseEntity())();
 
     if ( mimeType.startsWith('text/') ) return new (factory.TextResponseEntity())();
-    console.log(1)
 
     return new (factory.ResponseEntity())();
 }
 
 function resolveStatus( restMethod: Function, httpMethod: Maybe<string>, resultContent: any ): number {
-    const producingStatusCode: Maybe<number> = getProducingDecoratorMetadata(restMethod).statusCode;
-    if ( producingStatusCode !== undefined ) return producingStatusCode;
+    const generator: Maybe<StatusCodeGenerator<any>> = getProducingDecoratorMetadata(restMethod).statusCode;
+    if ( generator !== undefined ) return generator(resultContent);
 
     if ( resultContent === null || resultContent === undefined ) return 204;
     if ( httpMethod === 'GET' ) return 200;
