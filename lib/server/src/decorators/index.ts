@@ -11,4 +11,5 @@ export * from './query-parameter';
 export * from './query-parameters';
 export * from './request-body';
 export * from './response-entity';
+export * from './rest-mapping';
 export * from './utils';
