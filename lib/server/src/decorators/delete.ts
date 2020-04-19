@@ -1,8 +1,5 @@
-import { routesReadyState } from '../state';
+import { RestMapping } from './rest-mapping';
 
 export function Delete( route: string ) {
-    return ( target: any, methodName: string ) => {
-        routesReadyState.incrementTargetNumberOfRoutes();
-        routesReadyState.initializeRoute(Delete,'DELETE', route, target, methodName);
-    }
+    return RestMapping(Delete, route, 'DELETE');
 }

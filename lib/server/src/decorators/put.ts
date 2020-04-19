@@ -1,8 +1,5 @@
-import { routesReadyState } from '../state';
+import { RestMapping } from './rest-mapping';
 
 export function Put( route: string ) {
-    return ( target: any, methodName: string ) => {
-        routesReadyState.incrementTargetNumberOfRoutes();
-        routesReadyState.initializeRoute(Put,'PUT', route, target, methodName);
-    }
+    return RestMapping(Put, route, 'PUT');
 }

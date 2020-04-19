@@ -1,8 +1,5 @@
-import { routesReadyState } from '../state';
+import { RestMapping } from './rest-mapping';
 
 export function Patch( route: string ) {
-    return ( target: any, methodName: string ) => {
-        routesReadyState.incrementTargetNumberOfRoutes();
-        routesReadyState.initializeRoute(Patch,'PATCH', route, target, methodName);
-    }
+    return RestMapping(Patch, route, 'PATCH');
 }
