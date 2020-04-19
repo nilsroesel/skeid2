@@ -26,6 +26,7 @@ export class RequestListenerFactory {
     public create(): RequestListener {
         return ( request: IncomingMessage, response: ServerResponse ) => {
             const requestUrl: Url = parse(request.url || '', true);
+            const responseEntityFactory: ResponseEntityFactory = new ResponseEntityFactory(response);
             Promise.resolve()
                 .then(() => this.router.routeRequest(request.method || '', requestUrl))
                 .then(async mappedEndpoint => {
@@ -39,7 +40,6 @@ export class RequestListenerFactory {
                         getBodySchemaFromMethodMetadata(mappedEndpoint.restMethod),
                         getQueryParameterSchemaFromMetadata(mappedEndpoint.restMethod)
                     );
-                    const responseEntityFactory: ResponseEntityFactory = new ResponseEntityFactory(response);
 
                     // @RequestBody/@PathVariable/@QueryParameter
                     const callerArguments = createCallerArguments(
@@ -65,8 +65,12 @@ export class RequestListenerFactory {
                 .catch(error => {
                     // TODO Inject error handler
                     console.log(error);
-                    response.statusCode = 500;
-                    response.end();
+                    const mimeType: string = resolveMimeType(error.constructor, error);
+                    const responseEntity: Response = constructResponseBasedOnMimeType(mimeType, responseEntityFactory);
+                    responseEntity.status(getProducingDecoratorMetadata(error.constructor).statusCode || 500);
+                    responseEntity.setHeader('Content-Type', mimeType);
+                    responseEntity.body(error);
+                    responseEntity.respond();
                 });
         };
     }
