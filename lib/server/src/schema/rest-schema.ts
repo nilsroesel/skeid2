@@ -15,6 +15,17 @@ export class RestSchema<T> {
         return schema;
     }
 
+    public static string(): RestSchema<string> {
+        const schema: RestSchema<string> = new RestSchema<string>('', false);
+        Object.assign(schema, {
+            serialize: ( something: { [property: string]: any} ) => something,
+            getLoggableSchemaDefinition: () => ({ body: 'string'}),
+            checkStrictType: () => {},
+            preProcessor: () => ( something: string ) => something
+        });
+        return schema;
+    }
+
     private partialTyping: boolean = false;
 
     constructor( private schemaDefinition: SchemaDefinition<T>, private strictTypeCheck: boolean = true ) {}
@@ -27,6 +38,10 @@ export class RestSchema<T> {
             ...withSchema.schemaDefinition
         } as SchemaDefinition<T & T2>;
         return new RestSchema<T & T2>(newSchemaDefinition);
+    }
+
+    public preProcessor(): Function {
+        return JSON.parse;
     }
     
     public serialize( something: { [property: string]: any} ): T | never {
