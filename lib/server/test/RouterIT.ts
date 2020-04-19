@@ -4,6 +4,7 @@ import { parse } from 'url';
 import { Router } from '../src/routing/router';
 import { ClashingRoutesError, DuplicatedEndpointError } from '../../configuration/error';
 import { MethodNotAllowedError, NoSuchRouteError } from '../src/error';
+import { Consumes } from '../src/decorators/consumes';
 
 describe('Test Router and routing', () => {
     let router: Router;
@@ -87,14 +88,28 @@ describe('Test Router and routing', () => {
         expect(() => {
             router.registerRoute('GET','/users/', () => undefined);
             router.registerRoute('GET','/users/', () => undefined);
-        }).toThrowMatching(thrown => (thrown instanceof DuplicatedEndpointError))
+        }).toThrowMatching(thrown => (thrown instanceof DuplicatedEndpointError));
+    });
+
+    it('Should be possible to register the same route with same http, but different accept-mime', () => {
+        class Test {
+            withMetadata(){ return 1 }
+        }
+        Consumes('application/json')(Test.prototype, 'withMetadata');
+        router.registerRoute('GET','/users/', () => undefined);
+        router.registerRoute('GET','/users/', Test.prototype.withMetadata);
+
+        expect(router.routeRequest('GET', parse('/users/'), 'application/json').restMethod())
+            .toEqual(1);
+        expect(router.routeRequest('GET', parse('/users/')).restMethod())
+            .toBeUndefined();
     });
 
     it('Should not be possible to register two path variables at the same level', () => {
         expect(() => {
             router.registerRoute('GET','/users/{id}', () => undefined);
             router.registerRoute('GET','/users/{foo}', () => undefined);
-        }).toThrowMatching(thrown => (thrown instanceof ClashingRoutesError))
+        }).toThrowMatching(thrown => (thrown instanceof ClashingRoutesError));
     });
 
 });

@@ -1,6 +1,7 @@
 import { ClashingRoutesError, DuplicatedEndpointError } from '../../../configuration/error';
-import { RoutePart, RegisteredEndpoint } from './';
+import { RegisteredEndpoint, RoutePart } from './';
 import { Maybe } from '../../../global-types';
+import { getConsumingMimeType } from '../decorators/consumes';
 
 export class RouteCollection {
 
@@ -42,7 +43,7 @@ export class RouteCollection {
 
         const newChild: RouteCollection = this.addChild(currentPart);
         if ( subRoute.length === 1 ) {
-            if ( newChild.endpointForHttpMethodAlreadyExists(endpoint.httpMethod) ) {
+            if ( newChild.endpointExistsWithMimeTypeAndHttpMethod(endpoint.httpMethod, endpoint.restMethod) ) {
                 throw new DuplicatedEndpointError(newChild.fullQualifiedRoute, endpoint.httpMethod);
             }
             newChild.endpoints.push({ ...endpoint, route: newChild.fullQualifiedRoute });
@@ -94,8 +95,11 @@ export class RouteCollection {
         return this.subRoutes.find(part => part.route.isPathVariable()) !== undefined;
     }
 
-    private endpointForHttpMethodAlreadyExists( httpMethod: string ): boolean {
-        return this.endpoints.find(e => e.httpMethod === httpMethod) !== undefined;
+    private endpointExistsWithMimeTypeAndHttpMethod( httpMethod: string, restMethod: Function ): boolean {
+        return this.endpoints
+            .filter(e => e.httpMethod === httpMethod)
+            .map(e => e.restMethod)
+            .find(fn => getConsumingMimeType(fn) === getConsumingMimeType(restMethod)) !== undefined;
     }
 }
 
