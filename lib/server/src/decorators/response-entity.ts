@@ -19,8 +19,6 @@ export function ResponseEntity<T extends Response>( select: SelectorFunction<T> 
     };
 }
 
-
-
 export function getResponseEntityInjectionMetadata( from: Function ): Maybe<ResponseEntityInjectionMetadata> {
     return  Reflect.getMetadata(responseEntityParameterInjectionMetadata, from);
 }
