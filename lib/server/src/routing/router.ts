@@ -1,6 +1,9 @@
 import { Url } from 'url';
 import { MethodNotAllowedError, NoSuchRouteError } from '../error';
 import { AssignedPathVariables, RegisteredEndpoint, RouteCollection } from './';
+import { Maybe } from '../../../global-types';
+import { getConsumingMimeType, MIME_WILDCARD } from '../decorators/consumes';
+import { BadMediaTypeError } from '../error/bad-media-type-error';
 
 export class Router {
 
@@ -15,7 +18,7 @@ export class Router {
             this.routes.addSubRoute(routeParts, endpoint);
     }
 
-    routeRequest( httpMethod: string, url: Url ): RegisteredEndpoint<unknown> & AssignedPathVariables {
+    routeRequest( httpMethod: string, url: Url, contentType: Maybe<string> = MIME_WILDCARD ): RegisteredEndpoint<unknown> & AssignedPathVariables {
         const calledRoute: Array<string> = (url.pathname || '').split('/');
 
         const endpointsWithMatchingRoute: Array<RegisteredEndpoint<any>>
@@ -25,17 +28,28 @@ export class Router {
             throw new NoSuchRouteError(url);
         }
 
-        const endpointForRequestedHttpMethod: RegisteredEndpoint<any> | undefined = endpointsWithMatchingRoute
-            .find(endpoint => endpoint.httpMethod === httpMethod);
+        const endpointForRequestedHttpMethod: Array<RegisteredEndpoint<any>> = endpointsWithMatchingRoute
+            .filter(endpoint => endpoint.httpMethod === httpMethod).filter(e => e!== undefined);
 
-        if ( endpointForRequestedHttpMethod === undefined ) {
+        if ( endpointForRequestedHttpMethod.length === 0 ) {
             throw new MethodNotAllowedError(httpMethod, endpointsWithMatchingRoute[0].route?.join('/'))
         }
 
-        const pathVariables = RouteCollection.parsePathParameters(endpointForRequestedHttpMethod.route || [],
+        const appliedMimeTypeFilter: Maybe<RegisteredEndpoint<any>> = endpointForRequestedHttpMethod
+            .find(endpoint => getConsumingMimeType(endpoint.restMethod) === contentType) ||
+            endpointForRequestedHttpMethod
+                .find(endpoint => getConsumingMimeType(endpoint.restMethod) === undefined);
+
+        if ( appliedMimeTypeFilter === undefined ) {
+            throw new BadMediaTypeError(
+                endpointsWithMatchingRoute[0].route?.join('/') || url.pathname || '',
+                endpointForRequestedHttpMethod.map(e => getConsumingMimeType(e.restMethod) || MIME_WILDCARD))
+        }
+
+        const pathVariables = RouteCollection.parsePathParameters(appliedMimeTypeFilter.route || [],
             calledRoute);
 
-        return { ...endpointForRequestedHttpMethod, pathVariables };
+        return { ...appliedMimeTypeFilter, pathVariables };
     }
 }
 

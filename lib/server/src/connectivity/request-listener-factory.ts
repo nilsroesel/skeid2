@@ -29,8 +29,12 @@ export class RequestListenerFactory {
         return ( request: IncomingMessage, response: ServerResponse ) => {
             const requestUrl: Url = parse(request.url || '', true);
             const responseEntityFactory: ResponseEntityFactory = new ResponseEntityFactory(response);
+            // The request headers from IncomingMessage are always represented in lower case
+            const contentTypeHeader = request.headers['content-type'];
+            const requestContentType: Maybe<string> = Array.isArray(contentTypeHeader) ? contentTypeHeader[0] :
+                contentTypeHeader;
             Promise.resolve()
-                .then(() => this.router.routeRequest(request.method || '', requestUrl))
+                .then(() => this.router.routeRequest(request.method || '', requestUrl, requestContentType))
                 .then(async mappedEndpoint => {
                     const responseInjection: Maybe<ResponseEntityInjectionMetadata> =
                         getResponseEntityInjectionMetadata(mappedEndpoint.restMethod);
