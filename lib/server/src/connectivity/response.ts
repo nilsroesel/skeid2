@@ -1,6 +1,7 @@
 import { OutgoingHttpHeaders, ServerResponse } from 'http';
 import { HttpHeaders, HttpHeaderSet } from './http-headers';
 import { Instantiable, Maybe } from '../../../global-types';
+import { DeserializerFunction, getDeserializerMetadata } from '../decorators';
 
 interface FinishedResponse {}
 
@@ -90,7 +91,7 @@ export class ResponseEntityFactory implements ResponseFactory {
             }
 
             public respond(): FinishedResponse {
-                return super.respond(JSON.stringify(this._body));
+                return super.respond(this.deserializeBody());
             }
 
             public setHeader( header: string, value: string | Array<string> ): JsonResponse<T> {
@@ -115,6 +116,17 @@ export class ResponseEntityFactory implements ResponseFactory {
                 super.writeHead();
                 return this;
             }
+
+            private deserializeBody(): string | Buffer {
+                const defaultDeserializer: DeserializerFunction<any> = JSON.stringify;
+
+                if ( this._body !== null && this._body !== undefined ) {
+                    const deserializer: Maybe<DeserializerFunction<T>> =
+                        getDeserializerMetadata((this._body as any).constructor).deserializer || defaultDeserializer;
+                    return deserializer(this._body);
+                }
+                return defaultDeserializer(this._body);
+            }
         }
     }
 
@@ -122,8 +134,13 @@ export class ResponseEntityFactory implements ResponseFactory {
         return class extends (this.ResponseEntity()) implements TextResponse {
             private _body: Maybe<string> = undefined;
 
-            public body( from: Maybe<string> ): TextResponse {
-                this._body = from;
+            public body( from: Maybe<any>, encoding: string = 'utf8' ): TextResponse {
+                const deserialize: Maybe<string> | Buffer = this.deserialize(from);
+                if ( deserialize instanceof Buffer ) {
+                    this._body = deserialize.toString(encoding);
+                    return this;
+                }
+                this._body = deserialize;
                 return this;
             }
 
@@ -152,6 +169,14 @@ export class ResponseEntityFactory implements ResponseFactory {
             public writeHead(): TextResponse {
                 super.writeHead();
                 return this;
+            }
+
+            private deserialize( something: Maybe<any | null> ): Maybe<string | Buffer> {
+                if ( something === null || something === undefined ) return undefined;
+
+                const deserializer: Maybe<DeserializerFunction<any>> =
+                    getDeserializerMetadata((something as any).constructor).deserializer || String;
+                return deserializer(something);
             }
         }
     }

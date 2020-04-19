@@ -5,13 +5,13 @@ import { Router } from '../routing/router';
 import { Request } from './request';
 import {
     getBodySchemaFromMethodMetadata,
+    getDeserializerMetadata,
     getParameterIndexFromMetadata,
     getParameterSerializer,
     getProducingDecoratorMetadata,
     getQueryParameterSchemaFromMetadata,
     getRequestParameterIndexFromMethodMetaData,
     getResponseEntityInjectionMetadata,
-    ProducingMetadata,
     ResponseEntityInjectionMetadata
 } from '../decorators';
 import { Response, ResponseFactory, ResponseEntityFactory } from './response';
@@ -29,13 +29,9 @@ export class RequestListenerFactory {
             Promise.resolve()
                 .then(() => this.router.routeRequest(request.method || '', requestUrl))
                 .then(async mappedEndpoint => {
-                    const defaultEssentialResponseOptions: ProducingMetadata =
-                        getProducingDecoratorMetadata(mappedEndpoint.restMethod);
-
                     const responseInjection: Maybe<ResponseEntityInjectionMetadata> =
                         getResponseEntityInjectionMetadata(mappedEndpoint.restMethod);
 
-                    const usedMimeType = defaultEssentialResponseOptions.mimeType || 'application/json';
                     const resolvedRequest: Request<any, any> = await Request.new(
                         request,
                         mappedEndpoint.pathVariables,
@@ -44,8 +40,6 @@ export class RequestListenerFactory {
                         getQueryParameterSchemaFromMetadata(mappedEndpoint.restMethod)
                     );
                     const responseEntityFactory: ResponseEntityFactory = new ResponseEntityFactory(response);
-
-                    const responseEntity = constructResponseBasedOnMimeType(usedMimeType, responseEntityFactory);
 
                     // @RequestBody/@PathVariable/@QueryParameter
                     const callerArguments = createCallerArguments(
@@ -56,11 +50,12 @@ export class RequestListenerFactory {
                     );
                     const result = await mappedEndpoint.restMethod(callerArguments);
 
+                    const mimeType: string = resolveMimeType(mappedEndpoint.restMethod, result);
+                    const responseEntity: Response = constructResponseBasedOnMimeType(mimeType, responseEntityFactory);
                     if ( responseInjection === undefined ) {
-                        const statusCode = defaultEssentialResponseOptions.statusCode
-                            || getDefaultStatusFrom(request.method, result);
+                        const statusCode = resolveStatus(mappedEndpoint.restMethod, request.method, result);
                         responseEntity.status(statusCode);
-                        responseEntity.setHeader('Content-Type', usedMimeType);
+                        responseEntity.setHeader('Content-Type', mimeType);
                         responseEntity.body(result);
                         return responseEntity;
                     }
@@ -76,13 +71,6 @@ export class RequestListenerFactory {
         };
     }
 
-}
-
-function getDefaultStatusFrom( httpMethod: Maybe<string>, resultContent: any ): number {
-    if ( resultContent === null || resultContent === undefined ) return 204;
-    if ( httpMethod === 'GET' ) return 200;
-    if ( httpMethod === 'POST' || httpMethod === 'PUT' || httpMethod === 'PATCH' ) return 201;
-    return 204;
 }
 
 function createCallerArguments( restMethod: Function, request: Request<any, any>,
@@ -120,7 +108,29 @@ function constructResponseBasedOnMimeType( mimeType: string, factory: ResponseEn
     if ( mimeType === 'application/json' ) return new (factory.JsonResponseEntity())();
 
     if ( mimeType.startsWith('text/') ) return new (factory.TextResponseEntity())();
+    console.log(1)
 
     return new (factory.ResponseEntity())();
+}
 
+function resolveStatus( restMethod: Function, httpMethod: Maybe<string>, resultContent: any ): number {
+    const producingStatusCode: Maybe<number> = getProducingDecoratorMetadata(restMethod).statusCode;
+    if ( producingStatusCode !== undefined ) return producingStatusCode;
+
+    if ( resultContent === null || resultContent === undefined ) return 204;
+    if ( httpMethod === 'GET' ) return 200;
+    if ( httpMethod === 'POST' || httpMethod === 'PUT' || httpMethod === 'PATCH' ) return 201;
+    return 204;
+}
+
+
+function resolveMimeType( restMethod: Function, restMethodResult: any ): string {
+    let mimeType: string = 'text/plain';
+
+    mimeType = getProducingDecoratorMetadata(restMethod).mimeType || mimeType;
+    if ( restMethodResult?.constructor !== undefined ) {
+        mimeType = getDeserializerMetadata(restMethodResult.constructor).mimeType || mimeType;
+    }
+
+    return mimeType;
 }
