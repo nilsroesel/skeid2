@@ -43,18 +43,22 @@ export class ResponseEntityFactory implements ResponseFactory {
             }
 
             public respond( data?: Maybe<Buffer | string> ): FinishedResponse {
-                if ( data !== undefined ) response.write(data);
-                response.end();
+                if ( data !== undefined && response.writable ) {
+                    response.write(data);
+                    response.end();
+                }
                 return {};
             }
 
             public setHeader( header: string, value: string | Array<string> ): Response {
+                if ( response.headersSent ) return this;
                 response.setHeader(header, value);
                 this.headers[header] = value;
                 return this;
             }
 
             public setHeaders( headers: HttpHeaders | HttpHeaderSet ): Response {
+                if ( response.headersSent ) return this;
                 if ( headers instanceof Set ) {
                     headers.forEach( header => this.setHeader(header[0], header[1]));
                 } else {
@@ -64,17 +68,21 @@ export class ResponseEntityFactory implements ResponseFactory {
             }
 
             public status( statusCode: number, statusMessage?: Maybe<string> ): Response {
+                if ( response.headersSent ) return this;
+
                 response.statusCode = statusCode;
                 if ( statusMessage !== undefined ) response.statusMessage = statusMessage;
                 return this;
             }
 
             public writeChunk( chunkData: Buffer | string ): Response {
+                if ( !response.writable ) return this;
                 response.write(chunkData);
                 return this;
             }
 
             public writeHead(): Response {
+                if ( response.headersSent ) return this;
                 response.writeHead(response.statusCode, response.statusMessage,  this.headers);
                 return this;
             }
