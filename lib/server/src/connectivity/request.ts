@@ -9,7 +9,7 @@ export class Request<B, Q extends Parameters> {
     public static async serializeBody<T>( request: IncomingMessage, schema: RestSchema<T> ): Promise<T> {
         const rawBody: Buffer = await Request.binaryBody(request);
         const jsonBody = await Promise.resolve()
-            .then(() => JSON.parse(rawBody.toString()))
+            .then(() => schema.preProcessor()(rawBody.toString()))
             .catch(() => {
                 throw new BadContentTypeError(rawBody.toString(), 'JSON');
             });
@@ -32,7 +32,7 @@ export class Request<B, Q extends Parameters> {
     }
 
     public static async new<S, Q extends Parameters>( request: IncomingMessage, routeParameters: any, queryParameters: any,
-        schema: Maybe<RestSchema<S>>, querySchema: Maybe<RestSchema<Q>>) : Promise<Request<Maybe<S>, Parameters | Q>> {
+        schema: Maybe<RestSchema<S>>, querySchema: Maybe<RestSchema<Q>> ) : Promise<Request<Maybe<S>, Parameters | Q>> {
         const serializedQueryParams: Q | Parameters = await Promise.resolve()
                 .then(() => querySchema?.serialize(queryParameters || {}) || queryParameters)
                 .catch(error => {
