@@ -1,4 +1,5 @@
 export * from './application';
+export * from './consumes';
 export * from './delete';
 export * from './deserialize';
 export * from './get';

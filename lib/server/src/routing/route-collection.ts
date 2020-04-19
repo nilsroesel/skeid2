@@ -1,7 +1,7 @@
 import { ClashingRoutesError, DuplicatedEndpointError } from '../../../configuration/error';
 import { RegisteredEndpoint, RoutePart } from './';
 import { Maybe } from '../../../global-types';
-import { getConsumingMimeType } from '../decorators/consumes';
+import { getConsumingMimeType } from '../decorators';
 
 export class RouteCollection {
 

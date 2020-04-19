@@ -2,7 +2,7 @@ import { Url } from 'url';
 import { MethodNotAllowedError, NoSuchRouteError } from '../error';
 import { AssignedPathVariables, RegisteredEndpoint, RouteCollection } from './';
 import { Maybe } from '../../../global-types';
-import { getConsumingMimeType, MIME_WILDCARD } from '../decorators/consumes';
+import { getConsumingMimeType, MIME_WILDCARD } from '../decorators';
 import { BadMediaTypeError } from '../error/bad-media-type-error';
 
 export class Router {
