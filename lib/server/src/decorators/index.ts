@@ -1,5 +1,6 @@
 export * from './application';
 export * from './delete';
+export * from './deserialize';
 export * from './get';
 export * from './patch';
 export * from './path-variable';
