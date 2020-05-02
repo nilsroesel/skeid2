@@ -1,0 +1,1 @@
+{"version":3,"file":"registered-endpoint.js","sourceRoot":"","sources":["../../../../../lib/server/src/routing/registered-endpoint.ts"],"names":[],"mappings":"","sourcesContent":["export interface RegisteredEndpoint<T> {\n    httpMethod: string;\n    restMethod: Function;\n    route?: Array<string>;\n}\n"]}

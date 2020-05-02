@@ -1,0 +1,1 @@
+{"version":3,"file":"parameters.js","sourceRoot":"","sources":["../../../lib/global-types/parameters.ts"],"names":[],"mappings":"","sourcesContent":["export interface Parameters {\n    [parameter: string]: any;\n}\n"]}

@@ -1,0 +1,1 @@
+{"version":3,"file":"route.js","sourceRoot":"","sources":["../../../../../lib/server/src/router/route.ts"],"names":[],"mappings":";;AAAA,MAAa,KAAK;CAEjB;AAFD,sBAEC","sourcesContent":["export class Route {\n\n}\n\nexport interface FunctionWithContextObject<T> {\n    method: Pick<T, keyof T>;\n    object: T;\n}\n"]}

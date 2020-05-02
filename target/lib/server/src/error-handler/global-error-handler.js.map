@@ -1,0 +1,1 @@
+{"version":3,"file":"global-error-handler.js","sourceRoot":"","sources":["../../../../../lib/server/src/error-handler/global-error-handler.ts"],"names":[],"mappings":";;AAAA,MAAa,mBAAmB;CAK/B;AALD,kDAKC","sourcesContent":["export class ErrorHandlerFactory {\n    \n    public handle\n    \n    \n}"]}

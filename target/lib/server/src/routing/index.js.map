@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../../../lib/server/src/routing/index.ts"],"names":[],"mappings":";;;;;AAEA,wCAAmC;AACnC,kCAA6B;AAC7B,wCAAmC","sourcesContent":["export * from './path-parameters';\nexport * from './registered-endpoint';\nexport * from './route-collection';\nexport * from './route-part';\nexport * from './route-collection';\n"]}

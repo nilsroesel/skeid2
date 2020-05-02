@@ -1,0 +1,1 @@
+{"version":3,"file":"guards.js","sourceRoot":"","sources":["../../../../../lib/server/src/utils/guards.ts"],"names":[],"mappings":";;AAAA,SAAgB,qBAAqB,CAAE,SAAkB;IACrD,OAAO,OAAO,SAAS,KAAK,UAAU,CAAC;AAC3C,CAAC;AAFD,sDAEC","sourcesContent":["export function decoratedItemIsMethod( something: unknown ): something is Function {\n    return typeof something === 'function';\n}\n"]}

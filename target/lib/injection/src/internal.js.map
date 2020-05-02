@@ -1,0 +1,1 @@
+{"version":3,"file":"internal.js","sourceRoot":"","sources":["../../../../lib/injection/src/internal.ts"],"names":[],"mappings":";;;;;AAAA,+DAAsE;AAA7D,8DAAA,4BAA4B,CAAA;AACrC,gCAA0B","sourcesContent":["export { modifiableApplicationContext } from './appplication-context';\nexport * from './external'\n"]}

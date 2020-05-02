@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../lib/global-types/index.ts"],"names":[],"mappings":";;;;;AAAA,oCAA+B;AAI/B,iCAA4B","sourcesContent":["export * from './instantiable';\nexport * from './loader';\nexport * from './maybe';\nexport * from './parameters';\nexport * from './qualifier';\n"]}

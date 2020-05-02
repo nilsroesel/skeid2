@@ -1,0 +1,1 @@
+{"version":3,"file":"path-parameters.js","sourceRoot":"","sources":["../../../../../lib/server/src/routing/path-parameters.ts"],"names":[],"mappings":"","sourcesContent":["import { Parameters } from '../../../global-types';\n\nexport interface AssignedPathVariables {\n    pathVariables: Parameters;\n}\n"]}

@@ -1,0 +1,1 @@
+{"version":3,"file":"maybe.js","sourceRoot":"","sources":["../../../lib/global-types/maybe.ts"],"names":[],"mappings":"","sourcesContent":["export type Maybe<T> = T | undefined;\n"]}

@@ -1,0 +1,1 @@
+{"version":3,"file":"http-headers.js","sourceRoot":"","sources":["../../../../../lib/server/src/connectivity/http-headers.ts"],"names":[],"mappings":"","sourcesContent":["export type HttpHeaders = {\n    [header: string]: string | Array<string>;\n}\n\nexport type HttpHeaderSet = Set<[string, string | Array<string>]>;\n"]}

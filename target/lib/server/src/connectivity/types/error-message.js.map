@@ -1,0 +1,1 @@
+{"version":3,"file":"error-message.js","sourceRoot":"","sources":["../../../../../../lib/server/src/connectivity/types/error-message.ts"],"names":[],"mappings":"","sourcesContent":["export interface ErrorMessage {\n    status: number;\n    message?: string | undefined;\n}\n\n"]}
