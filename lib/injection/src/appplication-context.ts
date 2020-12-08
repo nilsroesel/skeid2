@@ -49,9 +49,9 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
     public load <T> ( EntryClass?: Maybe<Instantiable<T>> ): Promise<T> {
         return new Promise(resolve => {
             const resolveAndEmit = (component?: T) => {
+                this.executeAfterLoads();
                 this.loadedEvent.emit('loaded');
                 this.loadedEvent.removeAllListeners();
-                this.executeAfterLoads();
                 resolve(component);
             };
             Object.defineProperty(ApplicationContextImpl, 'INITIALIZED', {
