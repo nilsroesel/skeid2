@@ -10,9 +10,9 @@ export interface ApplicationContext extends Loader {
 }
 
 export interface ModifiableApplicationContext extends ApplicationContext {
-    add( dependency: string, on: ContextContainer ): void;
     addAfterLoad<T>( dependency: Instantiable<T>, methodName: Qualifier ): void;
-    registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void;
+    registerComponent<T>( clazz: Instantiable<T>, qualifier?: string ): void;
+    registerDependency( dependency: string, on: ContextContainer ): void;
 }
 
 export interface ContextContainer  {

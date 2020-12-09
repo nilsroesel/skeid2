@@ -16,7 +16,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
     private loadedEvent: EventEmitter = new EventEmitter();
 
 
-    public add( dependency: string, on: ContextContainer ): void {
+    public registerDependency( dependency: string, on: ContextContainer ): void {
         const list: Array<ContextContainer> = this.dependencyToInjectionsMap.get(dependency) || [];
         list.push(on);
         this.dependencyToInjectionsMap.set(dependency, list);
@@ -26,7 +26,7 @@ class ApplicationContextImpl implements ModifiableApplicationContext {
         this.afterLoadRegistry.push({ dependency, methodName });
     }
 
-    public registerDependency<T>( clazz: Instantiable<T>, qualifier?: string ): void {
+    public registerComponent<T>( clazz: Instantiable<T>, qualifier?: string ): void {
         const dependencyName = !!qualifier? qualifier : clazz.name;
         this.dependencyRegistry[dependencyName] = new clazz() as any;
     }

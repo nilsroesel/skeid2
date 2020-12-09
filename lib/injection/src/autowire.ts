@@ -28,7 +28,7 @@ function handleAsDecoratorFactory( qualifier: Instantiable<unknown> | Qualifier 
         throw new Error('Unexpected qualifier of dependency');
     }
     return ( target: Object , key: string | symbol ) => {
-        modifiableApplicationContext.add(qualifyingName, { target, key });
+        modifiableApplicationContext.registerDependency(qualifyingName, { target, key });
     }
 }
 
@@ -44,5 +44,5 @@ function handleAsPlainDecorator( target: Object, key: Qualifier ): void {
                 If this general issue is solved, the circular dependencies would work here without issues.
             `);
     }
-    modifiableApplicationContext.add(field.name, { target, key });
+    modifiableApplicationContext.registerDependency(field.name, { target, key });
 }

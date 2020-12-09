@@ -21,10 +21,10 @@ function handleAsDecoratorFactory( qualifier: Qualifier ) {
         throw new Error('Invalid Qualifier');
     }
     return <T>( clazz: Instantiable<T> ): void | T => {
-        modifiableApplicationContext.registerDependency(clazz, String(qualifier));
+        modifiableApplicationContext.registerComponent(clazz, String(qualifier));
     };
 }
 
 function handleAsPlainDecorator<T>( clazz: Instantiable<T> ) {
-    modifiableApplicationContext.registerDependency(clazz);
+    modifiableApplicationContext.registerComponent(clazz);
 }
