@@ -47,7 +47,7 @@ export class RequestListenerFactory {
                         getQueryParameterSchemaFromMetadata(mappedEndpoint.restMethod)
                     );
 
-                    // @RequestBody/@PathVariable/@QueryParameter
+                    // @RequestBody/@PathVariable/@QueryParameter/@Header
                     const callerArguments = createCallerArguments(
                         mappedEndpoint.restMethod,
                         resolvedRequest,
@@ -100,11 +100,14 @@ function createCallerArguments( restMethod: Function, request: Request<any, any>
 
         assignParametersToArguments(args, restMethod, request.routeParams, 'path:');
         assignParametersToArguments(args, restMethod, request.queryParams, 'query:');
+        assignParametersToArguments(args, restMethod, request.headers, 'header:')
 
         return args;
 }
 
-function assignParametersToArguments( args: Array<any>, method: Function, on: Object, type: 'path:' | 'query:' ): void {
+type ParameterItems = 'path:' | 'query:' | 'header:';
+
+function assignParametersToArguments( args: Array<any>, method: Function, on: Object, type: ParameterItems ): void {
     Object.entries(on)
         .map(entry => ({ key: entry[0], value: entry[1] }))
         .map(entry => ({

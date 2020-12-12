@@ -3,6 +3,7 @@ export * from './consumes';
 export * from './delete';
 export * from './deserialize';
 export * from './get';
+export * from './header';
 export * from './patch';
 export * from './path-variable';
 export * from './post';
