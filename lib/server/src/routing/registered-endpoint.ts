@@ -1,4 +1,4 @@
-export interface RegisteredEndpoint<T> {
+export interface RegisteredEndpoint {
     httpMethod: string;
     restMethod: Function;
     route?: Array<string>;

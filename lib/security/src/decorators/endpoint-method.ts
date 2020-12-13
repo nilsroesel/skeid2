@@ -1,7 +1,7 @@
 import { Maybe, Qualifier } from '../../../global-types';
 
 export const endpointMethodIndexMetadata = Symbol('endpointMethod');
-function EndpointMethod( target: any, propertyKey: Qualifier, parameterIndex: number ) {
+export function EndpointMethod( target: any, propertyKey: Qualifier, parameterIndex: number ) {
     Reflect.defineMetadata(endpointMethodIndexMetadata, parameterIndex, target[propertyKey]);
 }
 

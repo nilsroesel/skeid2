@@ -11,31 +11,30 @@ export class Router {
 
     constructor() {}
 
-    public registerRoute<T>( httpMethod: string, route: string, restMethod: Function ) {
-            const routeParts: Array<string> = route.split('/');
-            const endpoint: RegisteredEndpoint<T> = { httpMethod, restMethod };
-
-            this.routes.addSubRoute(routeParts, endpoint);
+    public registerRoute( httpMethod: string, route: string, restMethod: Function ) {
+        const routeParts: Array<string> = route.split('/');
+        const endpoint: RegisteredEndpoint = { httpMethod, restMethod };
+        this.routes.addSubRoute(routeParts, endpoint);
     }
 
-    routeRequest( httpMethod: string, url: Url, contentType: Maybe<string> = MIME_WILDCARD ): RegisteredEndpoint<unknown> & AssignedPathVariables {
+    public routeRequest( httpMethod: string, url: Url, contentType: Maybe<string> = MIME_WILDCARD ): RegisteredEndpoint & AssignedPathVariables {
         const calledRoute: Array<string> = (url.pathname || '').split('/');
 
-        const endpointsWithMatchingRoute: Array<RegisteredEndpoint<any>>
+        const endpointsWithMatchingRoute: Array<RegisteredEndpoint>
             = this.routes.findEndpointsByRoute(calledRoute);
 
         if ( endpointsWithMatchingRoute.length === 0 ) {
             throw new NoSuchRouteError(url);
         }
 
-        const endpointForRequestedHttpMethod: Array<RegisteredEndpoint<any>> = endpointsWithMatchingRoute
+        const endpointForRequestedHttpMethod: Array<RegisteredEndpoint> = endpointsWithMatchingRoute
             .filter(endpoint => endpoint.httpMethod === httpMethod).filter(e => e!== undefined);
 
         if ( endpointForRequestedHttpMethod.length === 0 ) {
             throw new MethodNotAllowedError(httpMethod, endpointsWithMatchingRoute[0].route?.join('/'))
         }
 
-        const appliedMimeTypeFilter: Maybe<RegisteredEndpoint<any>> = endpointForRequestedHttpMethod
+        const appliedMimeTypeFilter: Maybe<RegisteredEndpoint> = endpointForRequestedHttpMethod
             .find(endpoint => getConsumingMimeType(endpoint.restMethod) === contentType) ||
             endpointForRequestedHttpMethod
                 .find(endpoint => getConsumingMimeType(endpoint.restMethod) === undefined);

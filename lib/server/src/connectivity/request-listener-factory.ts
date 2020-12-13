@@ -55,19 +55,22 @@ export class RequestListenerFactory {
                     );
                     // @RequestBody/@PathVariable/@QueryParameter/@Header/@EndpointMethod
                     // No Response
-                    const callerArguments = createCallerArguments(
-                        mappedEndpoint.restMethod,
-                        resolvedRequest,
-                        responseEntityFactory,
-                        undefined,
-                        getEndpointMethodParameterIndexFromMethodMetaData(mappedEndpoint.restMethod)
-                    );
 
                     const definedScopeOfEndpoint: Scope = getEndpointScopeFromMethodMetaData(mappedEndpoint.restMethod);
 
                     await applicationContext.loadDependency(securityConfigClass)
                         .then(async securityConfig => {
-                            const scopes: Array<string> = await securityConfig.resolveScopes(callerArguments);
+                            const callerArguments = createCallerArguments(
+                                securityConfig.resolveScopes,
+                                resolvedRequest,
+                                responseEntityFactory,
+                                undefined,
+                                {
+                                    index: getEndpointMethodParameterIndexFromMethodMetaData(securityConfig.resolveScopes),
+                                    endpoint: mappedEndpoint.restMethod
+                                }
+                            );
+                            const scopes: Array<string> = await securityConfig.resolveScopes(...callerArguments);
                             if ( !definedScopeOfEndpoint.isValid(scopes) ) {
                                 throw new NotAuthorizedError();
                             }
@@ -124,11 +127,11 @@ export class RequestListenerFactory {
     }
 
 }
-type Index = number;
-function createCallerArguments( restMethod: Function, request: Request<any, any>,
+
+function createCallerArguments( decoratedMethod: Function, request: Request<any, any>,
     responseEntityFactory: ResponseFactory,
     responseInjection: Maybe<ResponseEntityInjectionMetadata>,
-    endpointMethodInjection?: Maybe<Index> ): Array<any> {
+    endpointMethodInjection?: Maybe<{ index: Maybe<number>, endpoint: Function }> ): Array<any> {
         const args: Array<any> = [];
 
         if ( responseInjection !== undefined ) {
@@ -136,16 +139,16 @@ function createCallerArguments( restMethod: Function, request: Request<any, any>
             args[responseInjection.index] = new (selection.apply(responseEntityFactory))();
         }
 
-        if ( endpointMethodInjection !== undefined ) {
-
+        if ( endpointMethodInjection?.index !== undefined ) {
+            args[endpointMethodInjection.index] = endpointMethodInjection.endpoint;
         }
 
-        const requestBodyIndex: Maybe<number> = getRequestParameterIndexFromMethodMetaData(restMethod);
+        const requestBodyIndex: Maybe<number> = getRequestParameterIndexFromMethodMetaData(decoratedMethod);
         if ( requestBodyIndex !== undefined ) args[requestBodyIndex] = request.body;
 
-        assignParametersToArguments(args, restMethod, request.routeParams, 'path:');
-        assignParametersToArguments(args, restMethod, request.queryParams, 'query:');
-        assignParametersToArguments(args, restMethod, request.headers, 'header:')
+        assignParametersToArguments(args, decoratedMethod, request.routeParams, 'path:');
+        assignParametersToArguments(args, decoratedMethod, request.queryParams, 'query:');
+        assignParametersToArguments(args, decoratedMethod, request.headers, 'header:')
 
         return args;
 }
