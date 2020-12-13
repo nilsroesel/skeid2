@@ -18,6 +18,13 @@ import {
 } from '../decorators';
 import { Response, ResponseFactory, ResponseEntityFactory } from './response';
 import { Maybe } from '../../../global-types';
+import {
+    getEndpointMethodParameterIndexFromMethodMetaData,
+    getEndpointScopeFromMethodMetaData, getSecurityConfigurationClass,
+    Scope
+} from '../../../security/src';
+import { applicationContext } from '../../../injection/src/appplication-context';
+import { NotAuthorizedError } from '../error/not-authorized-error';
 
 export type RequestListener = ( request: IncomingMessage, response: ServerResponse ) => void;
 
@@ -36,6 +43,39 @@ export class RequestListenerFactory {
             Promise.resolve()
                 .then(() => this.router.routeRequest(request.method || '', requestUrl, requestContentType))
                 .then(async mappedEndpoint => {
+                    const securityConfigClass = getSecurityConfigurationClass();
+                    if ( securityConfigClass === undefined ) return mappedEndpoint;
+
+                    const resolvedRequest: Request<any, any> = await Request.new(
+                        request,
+                        mappedEndpoint.pathVariables,
+                        requestUrl.query,
+                        undefined,
+                        undefined
+                    );
+                    // @RequestBody/@PathVariable/@QueryParameter/@Header/@EndpointMethod
+                    // No Response
+                    const callerArguments = createCallerArguments(
+                        mappedEndpoint.restMethod,
+                        resolvedRequest,
+                        responseEntityFactory,
+                        undefined,
+                        getEndpointMethodParameterIndexFromMethodMetaData(mappedEndpoint.restMethod)
+                    );
+
+                    const definedScopeOfEndpoint: Scope = getEndpointScopeFromMethodMetaData(mappedEndpoint.restMethod);
+
+                    await applicationContext.loadDependency(securityConfigClass)
+                        .then(async securityConfig => {
+                            const scopes: Array<string> = await securityConfig.resolveScopes(callerArguments);
+                            if ( !definedScopeOfEndpoint.isValid(scopes) ) {
+                                throw new NotAuthorizedError();
+                            }
+                        });
+
+                    return mappedEndpoint;
+                })
+                .then(async mappedEndpoint => {
                     const responseInjection: Maybe<ResponseEntityInjectionMetadata> =
                         getResponseEntityInjectionMetadata(mappedEndpoint.restMethod);
 
@@ -47,7 +87,7 @@ export class RequestListenerFactory {
                         getQueryParameterSchemaFromMetadata(mappedEndpoint.restMethod)
                     );
 
-                    // @RequestBody/@PathVariable/@QueryParameter/@Header
+                    // @Response/@RequestBody/@PathVariable/@QueryParameter/@Header
                     const callerArguments = createCallerArguments(
                         mappedEndpoint.restMethod,
                         resolvedRequest,
@@ -84,15 +124,20 @@ export class RequestListenerFactory {
     }
 
 }
-
+type Index = number;
 function createCallerArguments( restMethod: Function, request: Request<any, any>,
     responseEntityFactory: ResponseFactory,
-    responseInjection: Maybe<ResponseEntityInjectionMetadata> ): Array<any> {
+    responseInjection: Maybe<ResponseEntityInjectionMetadata>,
+    endpointMethodInjection?: Maybe<Index> ): Array<any> {
         const args: Array<any> = [];
 
         if ( responseInjection !== undefined ) {
             const selection = responseInjection.select(responseEntityFactory);
             args[responseInjection.index] = new (selection.apply(responseEntityFactory))();
+        }
+
+        if ( endpointMethodInjection !== undefined ) {
+
         }
 
         const requestBodyIndex: Maybe<number> = getRequestParameterIndexFromMethodMetaData(restMethod);
